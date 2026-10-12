@@ -60,14 +60,15 @@ function gradientTexture(stops: [number, string][], radial: boolean) {
   return tex;
 }
 
-export function createLaptopScene(canvas: HTMLCanvasElement) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setClearColor(0x000000, 0);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+/* One WebGL context for the whole page. Every laptop (hero, dive bridge,
+   contact, companion) renders its own scene through this renderer into a
+   region of its buffer and copies the frame into its own 2D canvas — browsers
+   cap live WebGL contexts, and one context per laptop made the last ones fail
+   ("Cannot read properties of null (reading 'precision')"). */
+type Shared = { renderer: THREE.WebGLRenderer; envTex: THREE.Texture; w: number; h: number };
+let shared: Shared | null = null;
 
-  const scene = new THREE.Scene();
-
+function buildEnvironment(renderer: THREE.WebGLRenderer) {
   // Studio environment for real metal reflections.
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
@@ -84,7 +85,49 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
   panel(6, 1.2, new THREE.Color(0.55, 0.45, 0.9), [0, 1, -6]);
   panel(10, 0.35, new THREE.Color(3, 3, 3.2), [0, 2.5, 6]); // thin strip: crisp front-edge highlight
   const envTex = pmrem.fromScene(env, 0.03).texture;
-  scene.environment = envTex;
+  pmrem.dispose();
+  env.traverse((o) => {
+    if (o instanceof THREE.Mesh) {
+      o.geometry.dispose();
+      (o.material as THREE.Material).dispose();
+    }
+  });
+  return envTex;
+}
+
+function getShared(): Shared {
+  if (shared) return shared;
+  const canvas = document.createElement("canvas");
+  // Throws when no WebGL context can be created; callers keep the laptop empty.
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(1);
+  renderer.setClearColor(0x000000, 0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const current: Shared = { renderer, envTex: buildEnvironment(renderer), w: 0, h: 0 };
+  // If the GPU drops the context, start fresh on the next frame.
+  canvas.addEventListener(
+    "webglcontextlost",
+    (e) => {
+      e.preventDefault();
+      if (shared === current) shared = null;
+    },
+    { once: true },
+  );
+  shared = current;
+  return current;
+}
+
+/** Largest canvas side we render; keeps the shared buffer within GPU limits. */
+export const MAX_CANVAS_PX = 4096;
+
+export function createLaptopScene(canvas: HTMLCanvasElement) {
+  const sh0 = getShared(); // fail fast (no WebGL) before building anything
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("2D canvas unavailable");
+
+  const scene = new THREE.Scene();
+  scene.environment = sh0.envTex;
   scene.environmentIntensity = 0.75;
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a22, 0.3));
@@ -121,7 +164,7 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
   cv.height = 1280;
   const screenTex = new THREE.CanvasTexture(cv);
   screenTex.colorSpace = THREE.SRGBColorSpace;
-  screenTex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  screenTex.anisotropy = Math.min(8, sh0.renderer.capabilities.getMaxAnisotropy());
   let drawnLines = -1;
   // Optional override of the screen content (companion laptop, §11.8).
   let custom: { title: string; lines: { t: string; c?: string }[] } | null = null;
@@ -357,12 +400,36 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
     (seam.material as THREE.MeshBasicMaterial).opacity = s.seam;
     (seamGlow.material as THREE.MeshBasicMaterial).opacity = s.seam;
     seam.visible = seamGlow.visible = s.seam > 0.001;
+
+    let sh: Shared;
+    try {
+      sh = getShared();
+    } catch {
+      return; // context gone and can't be recreated: leave the last frame
+    }
+    const { renderer } = sh;
+    const pw = canvas.width;
+    const ph = canvas.height;
+    // Grow-only buffer: switching between laptops never reallocates it per frame.
+    if (pw > sh.w || ph > sh.h) {
+      sh.w = Math.max(sh.w, pw);
+      sh.h = Math.max(sh.h, ph);
+      renderer.setSize(sh.w, sh.h, false);
+    }
+    scene.environment = sh.envTex;
+    renderer.setViewport(0, 0, pw, ph);
+    renderer.setScissor(0, 0, pw, ph);
+    renderer.setScissorTest(true);
     renderer.render(scene, camera);
+    renderer.setScissorTest(false);
+    // WebGL's origin is bottom-left: our region is the bottom of the buffer.
+    ctx.clearRect(0, 0, pw, ph);
+    ctx.drawImage(renderer.domElement, 0, sh.h - ph, pw, ph, 0, 0, pw, ph);
   };
 
   const resize = (w: number, h: number, pixelRatio: number) => {
-    renderer.setPixelRatio(pixelRatio);
-    renderer.setSize(w, h, false);
+    canvas.width = Math.max(1, Math.min(MAX_CANVAS_PX, Math.round(w * pixelRatio)));
+    canvas.height = Math.max(1, Math.min(MAX_CANVAS_PX, Math.round(h * pixelRatio)));
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     last = "";
@@ -389,10 +456,7 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
         });
       }
     });
-    envTex.dispose();
-    pmrem.dispose();
-    renderer.dispose();
-    renderer.forceContextLoss();
+    // The shared renderer and environment stay alive for the other laptops.
   };
 
   return { render, resize, redrawText, setScreen, dispose };

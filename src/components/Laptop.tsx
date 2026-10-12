@@ -16,15 +16,8 @@ type Props = {
 };
 
 type Scene = ReturnType<typeof import("./laptop3d").createLaptopScene>;
-
-const supportsWebGL = () => {
-  try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-};
+// Mirrors laptop3d.MAX_CANVAS_PX without pulling three.js into the main bundle.
+const MAX_CANVAS_PX = 4096;
 
 const windowLoaded = () =>
   new Promise<void>((resolve) => {
@@ -50,14 +43,6 @@ export function Laptop({ label, className, priority = false, oversample = 1.5 }:
     const root = rootRef.current;
     const canvas = canvasRef.current;
     if (!root || !canvas) return;
-    if (!supportsWebGL()) {
-      // No WebGL: the laptop stays empty (glow only); nothing for the loader to wait on.
-      if (priority) {
-        markLoaded("laptop-module");
-        markLoaded("laptop");
-      }
-      return;
-    }
 
     let scene: Scene | null = null;
     let loading = false;
@@ -83,7 +68,7 @@ export function Laptop({ label, className, priority = false, oversample = 1.5 }:
       const w = root.clientWidth || 1;
       const h = root.clientHeight || 1;
       // Oversample: the hero scales the laptop up to 1.4× (the dive bridge ~3.4×) with CSS transforms.
-      const maxPx = 2400 * Math.max(1, oversample / 1.5);
+      const maxPx = Math.min(MAX_CANVAS_PX, 2400 * Math.max(1, oversample / 1.5));
       const ratio = Math.min((window.devicePixelRatio || 1) * oversample, maxPx / w, oversample * 2);
       scene.resize(w, h, ratio);
       tick();
@@ -98,8 +83,9 @@ export function Laptop({ label, className, priority = false, oversample = 1.5 }:
       try {
         scene = mod.createLaptopScene(canvas);
       } catch {
+        // No WebGL: stays empty (glow only); nothing more for the loader to wait on.
         if (priority) markLoaded("laptop");
-        return; // stays empty (glow only)
+        return;
       }
       size();
       root.dataset.three = "ready";
