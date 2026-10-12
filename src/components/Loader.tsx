@@ -59,17 +59,26 @@ export function Loader() {
 
     document.fonts?.ready.then(() => markLoaded("fonts"));
 
-    // Ring geometry: a pill around the name → the viewport inset frame.
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    const pill: Geo = mobile
-      ? { w: 300, h: 150, r: 40, x: (W - 300) / 2, y: H * 0.48 - 75 }
-      : { w: 520, h: 140, r: 64, x: (W - 520) / 2, y: H / 2 - 70 };
-    const inset = mobile ? 12 : 24;
-    const frame: Geo = { x: inset, y: inset, w: W - inset * 2, h: H - inset * 2, r: mobile ? 28 : 40 };
+    // Ring geometry: a pill around the name → the viewport inset frame → full
+    // bleed. Measured from the layout viewport (clientWidth/Height, no
+    // scrollbar) so the viewBox maps 1:1 to the SVG and corners stay round;
+    // re-measured on resize until the reveal starts.
     const svg = svgRef.current!;
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const name = nameRef.current!;
     const shapes = svg.querySelectorAll<SVGRectElement>("[data-shape]");
+    const inset = mobile ? 12 : 24;
+    let W = 0;
+    let H = 0;
+    let pill: Geo = { x: 0, y: 0, w: 0, h: 0, r: 0 };
+    let revealing = false;
+    const measure = () => {
+      W = document.documentElement.clientWidth || window.innerWidth;
+      H = document.documentElement.clientHeight || window.innerHeight;
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      pill = mobile
+        ? { w: 300, h: 150, r: 40, x: (W - 300) / 2, y: H * 0.48 - 75 }
+        : { w: 520, h: 140, r: 64, x: (W - 520) / 2, y: H / 2 - 70 };
+    };
     const setGeo = (g: Geo) =>
       shapes.forEach((el) => {
         el.setAttribute("x", String(g.x));
@@ -78,10 +87,15 @@ export function Loader() {
         el.setAttribute("height", String(g.h));
         el.setAttribute("rx", String(g.r));
       });
-    setGeo(pill);
-    const name = nameRef.current!;
-    name.style.left = `${pill.x + pill.w / 2}px`;
-    name.style.top = `${pill.y + pill.h / 2}px`;
+    const layout = () => {
+      if (revealing) return;
+      measure();
+      setGeo(pill);
+      name.style.left = `${pill.x + pill.w / 2}px`;
+      name.style.top = `${pill.y + pill.h / 2}px`;
+    };
+    layout();
+    window.addEventListener("resize", layout);
 
     const paint = (p: number) => {
       const pct = Math.round(p * 100);
@@ -114,6 +128,11 @@ export function Loader() {
         gsap.to(root, { opacity: 0, duration: 0.2, onComplete: cleanup });
         return;
       }
+      revealing = true;
+      measure();
+      const frame: Geo = { x: inset, y: inset, w: W - inset * 2, h: H - inset * 2, r: mobile ? 28 : 40 };
+      // Past the edges so the stroke leaves the screen entirely.
+      const bleed: Geo = { x: -6, y: -6, w: W + 12, h: H + 12, r: 0 };
       // Name Flips into the header logo while the ring grows to the frame.
       const brand = document.querySelector<HTMLElement>("header a[href='#top']");
       const nr = name.getBoundingClientRect();
@@ -137,8 +156,11 @@ export function Loader() {
           0,
         );
       }
-      // Then the ring fades and the frame goes full-bleed.
-      tl.to([root.querySelector("[data-outside]"), ringRef.current, name], { opacity: 0, duration: 0.4 }, 0.9);
+      // Then the frame keeps growing to full bleed — corners straighten, the
+      // black margin closes to nothing — while the ring fades out.
+      tl.to(geo, { ...bleed, duration: 0.55, ease: "power2.inOut", onUpdate: () => setGeo(geo) }, 0.9)
+        .to(ringRef.current, { opacity: 0, duration: 0.45, ease: "power1.in" }, 0.95)
+        .to(name, { opacity: 0, duration: 0.3 }, 0.9);
     };
 
     const finish = () => {
@@ -183,6 +205,7 @@ export function Loader() {
     gsap.ticker.add(tick);
 
     return () => {
+      window.removeEventListener("resize", layout);
       cancelAnimationFrame(announce);
       gsap.ticker.remove(tick);
       page.forEach((el) => (el.inert = false));
