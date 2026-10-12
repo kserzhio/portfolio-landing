@@ -1,0 +1,327 @@
+/* Hero — mockups 1a / 1b / 1c / 1m.
+   Default styles = final frame 1c (no JS, reduced motion). The full-motion
+   mode starts from frame 1a via [data-motion="full"] overrides. */
+
+.hero {
+  position: relative;
+  background: var(--black);
+}
+
+.pin {
+  position: relative;
+  height: 100svh;
+  min-height: 520px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.bgStart,
+.bgFinal {
+  position: absolute;
+  inset: 0;
+}
+.bgStart {
+  background: radial-gradient(ellipse 55% 45% at 50% 64%, #12131d 0%, #000 72%);
+}
+.bgFinal {
+  background: radial-gradient(ellipse 60% 45% at 50% 72%, #121530 0%, #04040a 55%, #000 80%);
+}
+
+/* 1440×900 design stage, fitted to the viewport. 1 design px = --sx. */
+.stage {
+  position: relative;
+  width: min(100vw, 160svh);
+  aspect-ratio: 1440 / 900;
+  container-type: inline-size;
+}
+.stage > * {
+  --sx: calc(100cqw / 1440);
+}
+
+.text {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+
+.name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(84 * var(--sx));
+  font-size: calc(176 * var(--sx));
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.sub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(276 * var(--sx));
+  font-size: calc(52 * var(--sx));
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.intro {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(358 * var(--sx));
+  font-size: max(15px, calc(21 * var(--sx)));
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.role {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(230 * var(--sx));
+  display: none;
+  text-align: center;
+  font-size: max(14px, calc(19 * var(--sx)));
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-2);
+}
+
+/* Soft violet light; follows the cursor on fine pointers (v2 1c). */
+.cursorLight {
+  position: absolute;
+  left: calc(880 * var(--sx));
+  top: calc(40 * var(--sx));
+  width: calc(560 * var(--sx));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(167, 139, 250, 0.24), rgba(91, 156, 255, 0.1) 55%, transparent);
+  pointer-events: none;
+}
+
+/* Scene: laptop + chip layers. 1 design px = --u. */
+.scene {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+}
+.scene > * {
+  --u: calc(100cqw / 1440);
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.chip {
+  position: absolute;
+  left: calc((var(--x) - var(--size) / 2) * var(--u));
+  top: calc((var(--y) - var(--size) / 2) * var(--u));
+  width: calc(var(--size) * var(--u));
+  height: calc(var(--size) * var(--u));
+  --chip-fs: calc(var(--size) * 0.24 * var(--u));
+  opacity: calc(1 - var(--depth) * 0.6);
+  filter: blur(calc(var(--b, calc(var(--depth) * 7)) * var(--u)));
+  transform: translate(calc(var(--fx, 0) * var(--u)), calc(var(--fy, 0) * var(--u))) scale(var(--fs, 1));
+}
+
+.laptopWrap {
+  position: absolute;
+  left: calc(340 * var(--u));
+  top: 0;
+  width: calc(760 * var(--u));
+  transform-origin: 50% 0;
+  transform: translateY(84.231%) scale(0.72);
+}
+.laptopWrap > * {
+  --glow: 0.7;
+}
+
+.hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(44 * var(--sx));
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.mouse {
+  position: relative;
+  width: 24px;
+  height: 38px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.4);
+}
+.mouse span {
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  width: 4px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--text);
+  animation: wheel 1.6s var(--ease-expo) infinite;
+}
+@keyframes wheel {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+.progress {
+  position: absolute;
+  left: 50%;
+  bottom: calc(26 * var(--sx));
+  width: 200px;
+  height: 2px;
+  margin-left: -100px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  display: none;
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: 0 50%;
+}
+
+.pause {
+  position: absolute;
+  right: 48px;
+  bottom: 44px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  font-size: 13px;
+  cursor: pointer;
+}
+.pause:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pauseIcon {
+  position: relative;
+  width: 9px;
+  height: 12px;
+  background: linear-gradient(90deg, var(--text) 0 3px, transparent 3px 6px, var(--text) 6px 9px);
+}
+.pauseIcon[data-paused] {
+  background: var(--text);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+/* ---------- full motion: start on frame 1a ---------- */
+:global([data-motion="full"]) .bgFinal,
+:global([data-motion="full"]) .cursorLight { opacity: 0; }
+:global([data-motion="full"]) .name,
+:global([data-motion="full"]) .sub,
+:global([data-motion="full"]) .intro { opacity: 0; }
+:global([data-motion="full"]) .role { display: block; }
+:global([data-motion="full"]) .hint { display: flex; }
+:global([data-motion="full"]) .progress { display: block; }
+:global([data-motion="full"]) .chip { opacity: 0; }
+:global([data-motion="full"]) .laptopWrap { transform: translateY(21.154%) scale(1.2); }
+:global([data-motion="full"]) .laptopWrap > * { --open: 0; --lines: 0; --glow: 0.15; }
+
+/* ---------- mobile layout (1m) ---------- */
+@media (max-width: 1023px) {
+  .pin {
+    height: auto;
+    min-height: 0;
+    display: block;
+    padding: calc(var(--header-h) + 48px) 0 64px;
+  }
+
+  .stage {
+    width: auto;
+    aspect-ratio: auto;
+    container-type: normal;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--gutter);
+  }
+
+  .text { display: contents; }
+
+  .name,
+  .sub,
+  .intro {
+    position: static;
+    text-align: left;
+  }
+  .name {
+    order: 1;
+    font-size: clamp(44px, 15.4vw, 60px);
+  }
+  .sub {
+    order: 2;
+    margin-top: 20px;
+    font-size: clamp(24px, 7.2vw, 28px);
+  }
+  .scene {
+    order: 3;
+    position: relative;
+    inset: auto;
+    margin: 28px calc(var(--gutter) * -1) 0;
+    aspect-ratio: 390 / 330;
+  }
+  .scene > * {
+    --u: calc(100cqw / 390);
+  }
+  .intro {
+    order: 4;
+    margin-top: 12px;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .chip {
+    left: calc((var(--mx) - var(--msize) / 2) * var(--u));
+    top: calc((var(--my) - var(--msize) / 2) * var(--u));
+    width: calc(var(--msize) * var(--u));
+    height: calc(var(--msize) * var(--u));
+    --chip-fs: calc(var(--msize) * 0.24 * var(--u));
+    opacity: calc(1 - var(--mdepth) * 0.6);
+    filter: blur(calc(var(--mdepth) * 7 * var(--u)));
+    transform: none;
+  }
+  .chip:not([data-mobile]) { display: none; }
+
+  .laptopWrap {
+    left: calc(20 * var(--u));
+    top: calc(52 * var(--u));
+    width: calc(350 * var(--u));
+    transform: none;
+  }
+
+  .role,
+  .hint,
+  .progress,
+  .cursorLight { display: none !important; }
+
+  :global([data-motion="mobile"]) .chip { opacity: 0; }
+  :global([data-motion="mobile"]) .laptopWrap > * { --open: 0; --lines: 0; --glow: 0.15; }
+}

@@ -1,0 +1,106 @@
+/* Intro — mockups 2a / 2b / 2c / 2m */
+.intro {
+  background: var(--night);
+}
+
+.pin {
+  padding: 150px var(--gutter) 120px;
+}
+
+.inner {
+  max-width: 1180px;
+}
+
+.eyebrow {
+  margin-bottom: 30px;
+}
+
+.statement {
+  font-size: clamp(34px, 5vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+:global([data-motion="full"]) .statement,
+:global([data-motion="mobile"]) .statement {
+  color: var(--unlit);
+}
+
+.counters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-top: 96px;
+  padding-top: 36px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.counter {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.number {
+  font-size: clamp(60px, 7.2vw, 104px);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-size: 19px;
+  color: var(--text-2);
+}
+
+/* Full motion: the section is pinned to one viewport. */
+:global([data-motion="full"]) .pin {
+  height: 100svh;
+  min-height: 640px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: max(110px, 16.6svh);
+  padding-bottom: 0;
+}
+:global([data-motion="full"]) .counters {
+  margin-top: clamp(56px, 10svh, 120px);
+}
+
+@media (max-width: 1023px) {
+  .pin {
+    padding: 72px var(--gutter) 80px;
+  }
+  .eyebrow {
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .statement {
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  .counters {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    margin-top: 56px;
+    padding-top: 26px;
+  }
+  .counter {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .number {
+    width: 110px;
+    flex: none;
+  }
+  .label {
+    font-size: 17px;
+  }
+}

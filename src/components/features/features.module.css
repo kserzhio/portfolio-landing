@@ -1,0 +1,634 @@
+/* Signature features (Developer Spec §11). */
+
+/* ---------- header tools ---------- */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tool {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+.tool svg {
+  width: 20px;
+  height: 20px;
+}
+.tool:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+.tool[aria-pressed="true"],
+.tool[aria-checked="true"],
+.tool[data-on] {
+  color: #000;
+  background: var(--blue);
+}
+:global([data-theme="light"]) .tool { color: var(--ink-2); }
+:global([data-theme="light"]) .tool:hover { color: var(--ink); background: rgba(0, 0, 0, 0.06); }
+:global([data-theme="light"]) .tool[aria-pressed="true"],
+:global([data-theme="light"]) .tool[aria-checked="true"],
+:global([data-theme="light"]) .tool[data-on] { color: #fff; background: var(--action); }
+.tool[data-sound="off"] [data-on],
+.tool[data-sound="on"] [data-off],
+.toolRow[data-sound="off"] [data-on],
+.toolRow[data-sound="on"] [data-off] {
+  display: none;
+}
+
+/* Visible tooltip for icon buttons (accessible name is the sr-only text). */
+.tip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.tool:hover .tip,
+.tool:focus-visible .tip {
+  opacity: 1;
+}
+
+.toolWrap {
+  position: relative;
+}
+.popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 5;
+  min-width: 240px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 20px 40px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+}
+.visionMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.visionMenu legend {
+  margin-bottom: 6px;
+  font: 600 12px/1.2 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.radio input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--blue);
+}
+.radio kbd {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  font: 500 11px/1.4 var(--font-mono);
+  color: var(--text-2);
+}
+
+.reportLink {
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Mobile menu variant */
+.toolsInline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.toolRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-size: 17px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.toolRow svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.toolRow[aria-pressed="true"],
+.toolRow[aria-checked="true"] {
+  color: var(--blue);
+}
+.toolsInline .visionMenu {
+  padding: 8px 4px;
+}
+
+/* ---------- screen reader mode (1d) ---------- */
+.readerLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+}
+.readerRing {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  box-shadow:
+    0 0 0 3px var(--blue),
+    0 0 0 9px rgba(91, 156, 255, 0.22),
+    0 0 0 100vmax rgba(0, 0, 0, 0.76);
+}
+/* Faint outline = next stop. */
+.readerNext {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 2px rgba(91, 156, 255, 0.35);
+}
+.readerStop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: var(--blue);
+  color: #000;
+  font: 600 12px/1.2 var(--font-mono);
+  white-space: nowrap;
+}
+.readerOn {
+  position: absolute;
+  right: 196px;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--paper);
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.readerDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--error);
+}
+.caption {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  translate: -50% 0;
+  width: min(760px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 30px 60px rgba(0, 0, 0, 0.6);
+  color: var(--text);
+}
+.eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 24px;
+  flex: none;
+}
+.eq span {
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--blue);
+  transform-origin: 50% 100%;
+  animation: eq 0.9s ease-in-out infinite;
+}
+.eq span:nth-child(2) { animation-delay: -0.3s; }
+.eq span:nth-child(3) { animation-delay: -0.6s; background: var(--violet); }
+.eq span:nth-child(4) { animation-delay: -0.15s; background: var(--violet); }
+.eq span:nth-child(5) { animation-delay: -0.45s; }
+.eq[data-static] span { animation: none; transform: scaleY(0.6); }
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.captionBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.captionText {
+  font: 500 18px/1.35 var(--font-mono);
+  color: var(--text);
+}
+.captionNext {
+  font-size: 13px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.captionStop {
+  flex: none;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  color: var(--text);
+  font-size: 13px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* ---------- X-ray (7b) ---------- */
+.xLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  pointer-events: none;
+  background: rgba(13, 17, 34, 0.08);
+  font: 600 12px/1.2 var(--font-mono);
+}
+.xBox,
+.xTag,
+.xNum {
+  position: absolute;
+}
+.xLayer[data-intro] .xBox,
+.xLayer[data-intro] .xTag,
+.xLayer[data-intro] .xNum {
+  animation: xIn 0.3s both;
+}
+@keyframes xIn {
+  from { opacity: 0; transform: scale(0.9); }
+}
+/* Landmarks violet, headings + controls blue. */
+.xBox {
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+.xBox[data-kind="landmark"] {
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 2px var(--violet);
+}
+.xTag {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--blue);
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xTag[data-kind="landmark"] {
+  background: var(--violet);
+}
+.xNum {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--blue), var(--violet));
+  color: #000;
+}
+
+/* ---------- vision simulator ---------- */
+.svgDefs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.lens {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 160;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3px var(--ink),
+    0 0 0 9px rgba(255, 255, 255, 0.75),
+    0 24px 60px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+.lensLabel {
+  position: absolute;
+  left: 50%;
+  top: calc(100% - 18px);
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lensLabel kbd {
+  font: 600 12px/1 var(--font-mono);
+  color: var(--text-2);
+}
+/* Mode picker — doubles as the keyboard / touch alternative. */
+.modeBar {
+  position: fixed;
+  right: 96px;
+  top: calc(var(--header-h) + 12px);
+  z-index: 161;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --focus: var(--action);
+}
+.modeBar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.modeBar button kbd {
+  font: 600 12px/1 var(--font-mono);
+  opacity: 0.7;
+}
+.modeBar button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+.modeBar button:hover:not([aria-pressed="true"]) {
+  background: #f2f2f5;
+}
+.visionFull {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  pointer-events: none;
+}
+.visionBadge {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--header-h) + 64px);
+  translate: -50% 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 12px/1.3 var(--font-mono);
+}
+
+/* ---------- focus-ring cursor ---------- */
+.cursorRing {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 170;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  /* Idle: soft ring. Over a control it wraps it like a focus ring. */
+  box-shadow: inset 0 0 0 2px rgba(91, 156, 255, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cursorRing[data-active] {
+  opacity: 1;
+}
+.cursorRing[data-target] {
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+/* ---------- marquee ---------- */
+.marquee {
+  overflow: hidden;
+  padding: 72px 0;
+  background: var(--night);
+}
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  font-size: clamp(80px, 11vw, 160px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(245, 245, 247, 0.35);
+}
+.marqueeTrack span {
+  padding-right: 0.25em;
+}
+
+/* ---------- companion laptop ---------- */
+.companion {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
+  width: 220px;
+  aspect-ratio: 760 / 520;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.92);
+  transition: opacity 0.4s, transform 0.5s var(--ease-expo), visibility 0s 0.5s;
+}
+.companion[data-shown] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.4s, transform 0.5s var(--ease-expo);
+}
+.companionCanvas {
+  width: 100%;
+  height: 100%;
+}
+.companionHide {
+  position: absolute;
+  right: 0;
+  top: -10px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(22, 22, 28, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.companion:hover .companionHide,
+.companionHide:focus-visible {
+  opacity: 1;
+}
+
+/* ---------- keyboard easter egg ---------- */
+.toastRegion {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 120;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 12px 12px 18px;
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  --focus: var(--action);
+}
+.toastLink {
+  font-weight: 650;
+  color: var(--action);
+  border-radius: 4px;
+}
+.toastClose {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 16px;
+  background: #ececf0;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* ---------- visit summary (8c) ---------- */
+.summary {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 14px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(22, 22, 28, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  font: 500 14px/1.4 var(--font-mono);
+  color: var(--text-2);
+}
+.summaryDot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 4px;
+  background: var(--blue);
+}
+.summaryMain {
+  color: var(--text);
+}
+
+@media (max-width: 1023px) {
+  .toastRegion {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+  .summary {
+    font-size: 12px;
+    justify-content: flex-start;
+  }
+  .readerOn {
+    right: auto;
+    left: 50%;
+    translate: -50% 0;
+  }
+  .modeBar {
+    left: 16px;
+    right: 16px;
+    flex-wrap: wrap;
+  }
+}
+
+/* Forced colors: decorative layers step aside. */
+@media (forced-colors: active) {
+  .cursorRing,
+  .lens {
+    display: none;
+  }
+}

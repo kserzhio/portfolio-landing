@@ -1,0 +1,29 @@
+/* Parent sets width, height and --chip-fs (24% of size), so the chip can be
+   scaled with the scene. */
+.chip {
+  width: 100%;
+  height: 100%;
+  border-radius: 28%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.03));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 18px 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--font-sans);
+  font-size: var(--chip-fs, 16px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.logo {
+  width: 48%;
+  height: 48%;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}

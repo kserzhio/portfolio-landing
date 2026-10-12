@@ -1,0 +1,133 @@
+/* Contact — mockups 8a / 8m */
+.section {
+  background: radial-gradient(ellipse 55% 40% at 50% 80%, #10132a 0%, #000 70%);
+}
+
+.pin {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120px var(--gutter) clamp(48px, 9svh, 112px);
+  overflow: hidden;
+}
+
+.cursorLight {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(167, 139, 250, 0.24), rgba(91, 156, 255, 0.1) 55%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.title {
+  position: relative;
+  max-width: 1320px;
+  text-align: center;
+  font-size: clamp(48px, 8.6vw, 124px);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+}
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 48px;
+}
+
+.btn {
+  height: 60px;
+  padding: 0 28px;
+  font-size: 18px;
+}
+
+.laptop {
+  width: min(608px, 70vw, calc((100svh - 500px) * 760 / 416));
+  min-width: 280px;
+  margin-top: auto;
+  padding-top: 32px;
+}
+.laptop > * {
+  --glow: 0.45;
+}
+
+/* Visit summary pill sits over the bottom of the frame (8c). */
+.summary {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(20px, 4svh, 40px);
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--gutter);
+}
+
+:global([data-motion="full"]) .pin {
+  height: 100svh;
+  padding-top: max(80px, 8svh);
+}
+
+@media (max-width: 1023px) {
+  .section {
+    background: radial-gradient(ellipse 90% 30% at 50% 90%, #10132a 0%, #000 70%);
+  }
+  .pin {
+    min-height: 0;
+    align-items: stretch;
+    padding: 80px var(--gutter) 56px;
+  }
+  .cursorLight {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(167, 139, 250, 0.24), rgba(91, 156, 255, 0.1) 55%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.title {
+  position: relative;
+    text-align: left;
+    font-size: clamp(40px, 12.3vw, 48px);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+  .actions {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 40px;
+  }
+  .btn {
+    width: 100%;
+    height: 56px;
+    font-size: 17px;
+  }
+  .laptop {
+    width: min(334px, 100%);
+    min-width: 0;
+    align-self: center;
+    margin-top: 40px;
+  }
+  :global([data-motion="mobile"]) .laptop > * { --open: 1; --glow: 0.7; }
+  .summary {
+    position: static;
+    justify-content: flex-start;
+    padding: 0;
+    margin-top: 24px;
+  }
+}

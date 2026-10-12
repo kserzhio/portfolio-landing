@@ -1,0 +1,291 @@
+/* Career journey — mockups 3a–3d (full motion) and 3m (stacked).
+   Default = stacked chapters (mobile, reduced, no JS). */
+
+.journey {
+  background: var(--night);
+}
+
+.pin {
+  position: relative;
+  padding: 120px var(--gutter);
+}
+
+.title {
+  margin-bottom: 56px;
+}
+.chapterOf {
+  display: none;
+}
+
+.chapters {
+  position: relative;
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: 112px;
+}
+
+.article {
+  position: relative;
+}
+
+.text {
+  display: grid;
+  grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
+  grid-template-areas:
+    "index visual"
+    "title visual"
+    "body  visual"
+    "tags  visual";
+  grid-template-rows: auto auto auto 1fr;
+  column-gap: clamp(48px, 8vw, 120px);
+  align-items: start;
+}
+.text > * + * {
+  margin-top: 24px;
+}
+.index { grid-area: index; }
+.chapterTitle { grid-area: title; }
+.body { grid-area: body; }
+.text > ul { grid-area: tags; }
+.articleVisual {
+  grid-area: visual;
+  margin-top: 0 !important;
+  justify-self: center;
+  width: 100%;
+  max-width: 560px;
+}
+.articleVisual[data-kind="phone"] { max-width: 240px; }
+.articleVisual[data-kind="dashboard"],
+.articleVisual[data-kind="xray"] { max-width: 620px; }
+
+.index {
+  font: 600 15px/1.2 var(--font-mono);
+}
+.indexNum {
+  color: var(--blue);
+}
+.year {
+  color: var(--text-2);
+}
+
+.chapterTitle {
+  font-size: clamp(32px, 3.9vw, 56px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+
+.body {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.numeral,
+.stage,
+.rail,
+.vrail {
+  display: none;
+}
+
+/* ---------- full motion: pinned horizontal track ---------- */
+:global([data-motion="full"]) .pin {
+  height: 100svh;
+  min-height: 640px;
+  padding: 0;
+  overflow: hidden;
+}
+
+:global([data-motion="full"]) .title {
+  position: absolute;
+  z-index: 2;
+  left: var(--gutter);
+  top: max(84px, 13.3svh);
+  margin: 0;
+}
+:global([data-motion="full"]) .chapterOf { display: inline; }
+
+:global([data-motion="full"]) .chapters { height: 100%; }
+
+:global([data-motion="full"]) .track {
+  flex-direction: row;
+  gap: 0;
+  width: 400vw;
+  height: 100%;
+}
+
+:global([data-motion="full"]) .article {
+  flex: none;
+  width: 100vw;
+  height: 100%;
+  padding: max(140px, 20svh) 0 0 var(--gutter);
+  overflow: hidden;
+}
+
+:global([data-motion="full"]) .text {
+  display: flex;
+  flex-direction: column;
+  width: min(480px, 34vw);
+}
+:global([data-motion="full"]) .articleVisual { display: none; }
+
+/* Next chapter's numeral peeks in at the right edge. */
+:global([data-motion="full"]) .numeral {
+  display: block;
+  position: absolute;
+  left: calc(100% - 80px);
+  top: 22svh;
+  font-size: 180px;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: var(--surface);
+  pointer-events: none;
+}
+
+:global([data-motion="full"]) .stage {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  right: 9vw;
+  top: 16.6svh;
+  width: min(43.06vw, calc(60svh * 620 / 540));
+  aspect-ratio: 620 / 540;
+  container-type: inline-size;
+}
+
+.shape {
+  position: absolute;
+  inset: 0;
+  background: #121218;
+  clip-path: inset(12.96% 4.84% 12.96% 4.84% round 2.58cqw);
+}
+
+.layer {
+  position: absolute;
+}
+.lBrowser { left: 4.84%; top: 12.96%; width: 90.32%; }
+.lPhone { left: 28.87%; top: 0; width: 42.26%; }
+.lDash { left: 0; top: 11.11%; width: 100%; }
+.layer + .layer { opacity: 0; }
+
+:global([data-motion="full"]) .rail {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: min(88.9svh, calc(100svh - 80px));
+}
+
+.line {
+  position: relative;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: 0 50%;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: -5px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 8px 4px 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.step:hover { color: var(--text); }
+.step[aria-current="step"] { color: var(--text); }
+
+.stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: #3a3a42;
+  transition: background-color 0.2s;
+}
+.step[data-done] .stepDot { background: var(--blue); }
+.steps li:last-child .step[aria-current="step"] .stepDot { background: var(--violet); }
+
+/* ---------- stacked layout ---------- */
+@media (max-width: 1023px) {
+  .pin {
+    padding: 56px var(--gutter) 80px;
+  }
+  .title {
+    margin-bottom: 24px;
+    font-size: 12px;
+  }
+  .chapters {
+    padding-left: 24px;
+  }
+  .vrail {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .vfill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(180deg, var(--blue), var(--violet));
+    transform-origin: 50% 0;
+  }
+  :global([data-motion="reduced"]) .vfill,
+  :global(html:not(.js)) .vfill {
+    transform: none;
+  }
+  .track {
+    gap: 56px;
+  }
+  .text {
+    display: flex;
+    flex-direction: column;
+  }
+  .text > * + * {
+    margin-top: 14px;
+  }
+  .index {
+    font-size: 13px;
+    color: var(--blue);
+  }
+  .articleVisual {
+    justify-self: auto;
+    margin-top: 14px !important;
+  }
+  .articleVisual[data-kind="phone"] {
+    max-width: 200px;
+    align-self: center;
+  }
+  .chapterTitle {
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+  .body {
+    font-size: 17px;
+    line-height: 1.5;
+  }
+}

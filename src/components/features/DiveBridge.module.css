@@ -1,0 +1,136 @@
+/* Dive into the code — mockups 3e / 3f / 3g. Full-motion mode only. */
+.dive {
+  display: none;
+  background: #000;
+}
+:global([data-motion="full"]) .dive {
+  display: block;
+}
+
+.pin {
+  --r: 0px;
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: #000;
+}
+
+/* A · laptop; transform origin ≈ the screen's centre in the 760×520 box. */
+.laptop {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(760px, 62vw);
+  translate: -50% -46%;
+  transform-origin: 50% 38%;
+}
+.laptop > * {
+  --glow: 0.9;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 55% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* B · the page as markup */
+.markupBg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, #121733 0%, #05060c 70%);
+  opacity: 0;
+}
+.code {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: 16.6svh;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.55svh, 14px);
+  font: 500 clamp(15px, 2.08vw, 30px) / 1.3 var(--font-mono);
+}
+.line {
+  white-space: pre;
+}
+
+/* C · light circle wipe from the centre, with a glowing edge. */
+.wipe {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  color: var(--ink);
+  clip-path: circle(var(--r) at 50% 52%);
+}
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  translate: -50% -50%;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px rgba(91, 156, 255, 0.6),
+    0 0 60px rgba(91, 156, 255, 0.35);
+  pointer-events: none;
+}
+.preview {
+  position: absolute;
+  inset: 0;
+}
+.eyebrow {
+  position: absolute;
+  left: 6.67vw;
+  top: 9.3svh;
+  font: 600 13px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.title {
+  position: absolute;
+  left: 6.67vw;
+  top: 12.2svh;
+  font-size: clamp(40px, 4.45vw, 64px);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.card {
+  position: absolute;
+  left: 50%;
+  top: 26.6svh;
+  width: min(520px, 36vw);
+  height: min(590px, 65svh);
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 40px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+}
+.cardTitle {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.cardLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+.cardField {
+  height: 54px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px #8e8e93;
+}
+.cardButton {
+  height: 56px;
+  margin-top: auto;
+  border-radius: 28px;
+  background: var(--action);
+}
