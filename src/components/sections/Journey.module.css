@@ -181,22 +181,37 @@
   top: min(88.9svh, calc(100svh - 80px));
 }
 
-.line {
-  position: relative;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.14);
-}
-.fill {
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  transform-origin: 0 50%;
-}
-
 .steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  margin-top: -5px;
+}
+.stepItem {
+  position: relative;
+}
+
+/* Rail segments run from just after one dot to just before the next (the
+   last one to the rail's end), so the line meets each dot instead of passing
+   through it. */
+.seg {
+  position: absolute;
+  left: 18px; /* 8px dot + 10px gap */
+  right: 10px;
+  top: 3px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+  pointer-events: none;
+}
+.stepItem:last-child .seg {
+  right: 0;
+}
+.segFill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
 }
 
 .step {

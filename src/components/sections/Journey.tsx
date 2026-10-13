@@ -94,7 +94,8 @@ export function Journey() {
     });
     stRef.current = tl.scrollTrigger ?? null;
 
-    tl.fromTo(q(`.${s.fill}`), { scaleX: 0 }, { scaleX: 1, duration: 1 }, 0);
+    // Rail: segment k fills across chapter k, reaching the next dot as it activates.
+    q(`.${s.segFill}`).forEach((seg, k) => tl.fromTo(seg, { scaleX: 0 }, { scaleX: 1, duration: CH }, k * CH));
 
     // Morph + slide into chapter k+1.
     for (let k = 0; k < chapters.length - 1; k++) {
@@ -221,12 +222,13 @@ export function Journey() {
         </div>
 
         <nav className={s.rail} aria-label="Career chapters">
-          <div className={s.line}>
-            <span className={s.fill} />
-          </div>
           <ol className={s.steps}>
             {chapters.map((c, i) => (
-              <li key={c.id}>
+              <li key={c.id} className={s.stepItem}>
+                {/* Segment from this dot to the next — stops short of each dot. */}
+                <span className={s.seg} aria-hidden="true">
+                  <span className={s.segFill} />
+                </span>
                 <button
                   type="button"
                   className={s.step}
