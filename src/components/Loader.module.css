@@ -39,6 +39,10 @@
 @keyframes loaderIn {
   to { opacity: 1; }
 }
+.loader[data-revealing] .fadeIn {
+  animation: none;
+  opacity: 1;
+}
 
 .ring {
   transition: filter 0.3s;

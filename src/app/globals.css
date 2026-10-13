@@ -44,6 +44,9 @@
 
 html {
   scroll-padding-top: 80px;
+  /* Reserve the scrollbar's space always: when the loader locks scrolling and
+     then releases it, the page width (and every pinned scene) stays put. */
+  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -69,10 +72,14 @@ img, svg, canvas { display: block; max-width: 100%; }
 button { font: inherit; color: inherit; }
 a { color: inherit; }
 
-/* Loader (§10) holds the page still until the reveal. */
+/* Loader (§10) holds the page still until the reveal; the header logo is
+   hidden until the loader's name lands on it. */
 html.loading,
 html.loading body {
   overflow: hidden;
+}
+html.loading header a[href="#top"] {
+  opacity: 0;
 }
 
 /* Lenis */

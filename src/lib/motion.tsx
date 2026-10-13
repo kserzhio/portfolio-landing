@@ -115,9 +115,12 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     lenisRef.current = lenis;
     // Hold smooth scroll while the loader (Developer Spec §10) is up.
     const html = document.documentElement;
-    const onLoaderDone = () => lenis?.start();
-    if (lenis && html.classList.contains("loading")) {
-      lenis.stop();
+    const onLoaderDone = () => {
+      lenis?.start();
+      ScrollTrigger.refresh();
+    };
+    if (html.classList.contains("loading")) {
+      lenis?.stop();
       window.addEventListener("loader:done", onLoaderDone, { once: true });
     }
 

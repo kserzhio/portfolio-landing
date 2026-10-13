@@ -109,7 +109,10 @@ export function Loader() {
       }
     };
 
+    const brand = document.querySelector<HTMLElement>("header a[href='#top']");
+
     const cleanup = () => {
+      if (brand) gsap.set(brand, { clearProps: "opacity" });
       page.forEach((el) => (el.inert = false));
       main?.removeAttribute("aria-busy");
       html.classList.remove("loading");
@@ -129,38 +132,68 @@ export function Loader() {
         return;
       }
       revealing = true;
+      // Hand opacity over to GSAP: the CSS fade-in (fill-mode: forwards) would
+      // otherwise override every inline opacity — the name never faded and sat
+      // on top of the header logo.
+      root.setAttribute("data-revealing", "");
       measure();
       const frame: Geo = { x: inset, y: inset, w: W - inset * 2, h: H - inset * 2, r: mobile ? 28 : 40 };
       // Past the edges so the stroke leaves the screen entirely.
       const bleed: Geo = { x: -6, y: -6, w: W + 12, h: H + 12, r: 0 };
-      // Name Flips into the header logo while the ring grows to the frame.
-      const brand = document.querySelector<HTMLElement>("header a[href='#top']");
-      const nr = name.getBoundingClientRect();
-      const br = brand?.getBoundingClientRect();
       const geo = { ...pill };
       const tl = gsap.timeline({ onComplete: cleanup });
       tl.to(root.querySelectorAll("[data-chrome]"), { opacity: 0, duration: 0.3 }, 0)
         .set(root.querySelector("[data-backdrop]"), { opacity: 0 }, 0)
         .to(geo, { ...frame, duration: 0.9, ease: "expo.inOut", onUpdate: () => setGeo(geo) }, 0)
         .to(root.querySelector("[data-fill]"), { opacity: 0, duration: 0.9, ease: "expo.inOut" }, 0);
-      if (br) {
+
+      // Name → header logo. The real logo stays hidden (html.loading) while the
+      // name flies; during the flight the name's tracking and weight morph to
+      // the logo's, so at the landing they match and simply crossfade.
+      const br = brand?.getBoundingClientRect();
+      if (br && !mobile) {
+        const cs = getComputedStyle(brand!);
+        const logoSize = parseFloat(cs.fontSize);
+        const nameSize = parseFloat(getComputedStyle(name).fontSize);
+        const scale = logoSize / nameSize;
+        // Measure the name with the logo's tracking/weight (still centred at its spot).
+        const from = { letterSpacing: name.style.letterSpacing, fontWeight: name.style.fontWeight };
+        name.style.letterSpacing = `${parseFloat(cs.letterSpacing) / logoSize || -0.01}em`;
+        name.style.fontWeight = cs.fontWeight;
+        const end = name.getBoundingClientRect();
+        name.style.letterSpacing = from.letterSpacing;
+        name.style.fontWeight = from.fontWeight;
+        // Land with the name's left edge and vertical centre on the logo's text box.
+        const range = document.createRange();
+        range.selectNodeContents(brand!);
+        const text = range.getBoundingClientRect();
+        const targetCx = text.left + (end.width * scale) / 2;
+        const targetCy = text.top + text.height / 2;
         tl.to(
           name,
           {
-            x: br.left + br.width / 2 - (nr.left + nr.width / 2),
-            y: br.top + br.height / 2 - (nr.top + nr.height / 2),
-            scale: br.height / nr.height,
+            x: targetCx - (end.left + end.width / 2),
+            y: targetCy - (end.top + end.height / 2),
+            scale,
+            letterSpacing: `${parseFloat(cs.letterSpacing) / logoSize || -0.01}em`,
+            fontWeight: cs.fontWeight,
             duration: 0.9,
             ease: "expo.inOut",
           },
           0,
-        );
+        )
+          .to(name, { opacity: 0, duration: 0.25 }, 0.95)
+          .to(brand!, { opacity: 1, duration: 0.25 }, 0.95);
+      } else {
+        // Mobile (two-line name) or no logo: fade out, logo fades in.
+        tl.to(name, { opacity: 0, duration: 0.35 }, 0.1);
+        if (brand) tl.to(brand, { opacity: 1, duration: 0.3 }, 0.9);
       }
+
       // Then the frame keeps growing to full bleed — corners straighten, the
       // black margin closes to nothing — while the ring fades out.
       tl.to(geo, { ...bleed, duration: 0.55, ease: "power2.inOut", onUpdate: () => setGeo(geo) }, 0.9)
-        .to(ringRef.current, { opacity: 0, duration: 0.45, ease: "power1.in" }, 0.95)
-        .to(name, { opacity: 0, duration: 0.3 }, 0.9);
+        .to(ringRef.current, { opacity: 0, duration: 0.45, ease: "power1.in" }, 0.95);
     };
 
     const finish = () => {
