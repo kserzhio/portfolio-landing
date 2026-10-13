@@ -4,6 +4,8 @@
 export const person = {
   name: "Serhii Kostenko",
   role: "Senior Frontend Developer · Accessibility Specialist",
+  /** Short line next to the name in the header. */
+  tagline: "Accessibility specialist",
   headline: "Frontend Developer.",
   headlineAccent: "Accessibility Specialist.",
   intro: "10 years of building interfaces. Now making sure everyone can use them.",

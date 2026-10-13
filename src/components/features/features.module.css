@@ -1,172 +1,259 @@
 /* Signature features (Developer Spec §11). */
 
-/* ---------- header tools ---------- */
-.tools {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.tool {
+/* ---------- header: "Accessibility tools" menu ---------- */
+.toolsWrap {
   position: relative;
-  width: 36px;
-  height: 36px;
+}
+.toolsButton {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 18px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 10px;
   background: none;
-  color: var(--text-2);
-  cursor: pointer;
-  transition: color 0.2s, background-color 0.2s;
-}
-.tool svg {
-  width: 20px;
-  height: 20px;
-}
-.tool:hover {
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.55);
   color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
-}
-.tool[aria-pressed="true"],
-.tool[aria-checked="true"],
-.tool[data-on] {
-  color: #000;
-  background: var(--blue);
-}
-:global([data-theme="light"]) .tool { color: var(--ink-2); }
-:global([data-theme="light"]) .tool:hover { color: var(--ink); background: rgba(0, 0, 0, 0.06); }
-:global([data-theme="light"]) .tool[aria-pressed="true"],
-:global([data-theme="light"]) .tool[aria-checked="true"],
-:global([data-theme="light"]) .tool[data-on] { color: #fff; background: var(--action); }
-.tool[data-sound="off"] [data-on],
-.tool[data-sound="on"] [data-off],
-.toolRow[data-sound="off"] [data-on],
-.toolRow[data-sound="on"] [data-off] {
-  display: none;
-}
-
-/* Visible tooltip for icon buttons (accessible name is the sr-only text). */
-.tip {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  translate: -50% 0;
-  padding: 5px 9px;
-  border-radius: 7px;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
-.tool:hover .tip,
-.tool:focus-visible .tip {
-  opacity: 1;
+.toolsButton:hover,
+.toolsButton[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--text);
+}
+.aa {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.toolsBadge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+:global([data-theme="light"]) .toolsButton {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+:global([data-theme="light"]) .toolsButton:hover,
+:global([data-theme="light"]) .toolsButton[aria-expanded="true"] {
+  background: rgba(0, 0, 0, 0.05);
+}
+:global([data-theme="light"]) .toolsBadge {
+  background: var(--action);
+  color: #fff;
 }
 
-.toolWrap {
-  position: relative;
-}
-.popover {
+.toolsMenu {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
   z-index: 5;
-  min-width: 240px;
-  padding: 14px 16px;
-  border-radius: 14px;
+  width: 340px;
+  max-height: calc(100svh - var(--header-h) - 24px);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 16px;
   background: var(--surface);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-    0 20px 40px rgba(0, 0, 0, 0.5);
+    0 24px 48px rgba(0, 0, 0, 0.55);
   color: var(--text);
+  --focus: var(--blue);
 }
-.visionMenu {
+.toolsMenu[hidden] {
+  display: none;
+}
+
+.toolsList {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin: 0;
-  padding: 0;
-  border: 0;
 }
-.visionMenu legend {
-  margin-bottom: 6px;
-  font: 600 12px/1.2 var(--font-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.rowIcon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+.rowIcon svg {
+  width: 18px;
+  height: 18px;
+}
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rowLabel {
+  font-size: 15px;
+  font-weight: 600;
+}
+.rowHint {
+  font-size: 12.5px;
+  line-height: 1.35;
   color: var(--text-2);
 }
-.radio {
+.rowTrack {
+  position: relative;
+  width: 36px;
+  height: 22px;
+  flex: none;
+  border-radius: 11px;
+  background: #3a3a42;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: background-color 0.2s;
+}
+.rowTrack span {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.2s var(--ease-expo), background-color 0.2s;
+}
+.row[aria-checked="true"] .rowTrack,
+.row[aria-pressed="true"] .rowTrack {
+  background: var(--blue);
+  box-shadow: none;
+}
+.row[aria-checked="true"] .rowTrack span,
+.row[aria-pressed="true"] .rowTrack span {
+  transform: translateX(14px);
+  background: #000;
+}
+.row[aria-checked="true"] .rowIcon,
+.row[aria-pressed="true"] .rowIcon {
+  background: rgba(91, 156, 255, 0.18);
+  color: var(--blue);
+}
+
+.visionGroup {
+  margin: 4px 0;
+  padding: 10px;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.visionLegend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.visionOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: 44px;
+}
+.chip {
+  position: relative;
+  cursor: pointer;
+}
+.chip input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.chip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  font-size: 13px;
+  font-weight: 500;
+}
+.chip kbd {
+  font: 600 11px/1 var(--font-mono);
+  color: var(--text-2);
+}
+.chip input:checked + span {
+  background: var(--blue);
+  color: #000;
+  box-shadow: none;
+}
+.chip input:checked + span kbd {
+  color: rgba(0, 0, 0, 0.6);
+}
+.chip input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.check {
   display: flex;
   align-items: center;
   gap: 10px;
   min-height: 36px;
-  font-size: 14px;
+  margin: 8px 0 0 44px;
+  font-size: 13px;
+  color: var(--text-2);
   cursor: pointer;
 }
-.radio input {
+.check input {
   width: 18px;
   height: 18px;
   accent-color: var(--blue);
 }
-.radio kbd {
-  margin-left: auto;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  font: 500 11px/1.4 var(--font-mono);
-  color: var(--text-2);
-}
-
-.reportLink {
-  border: 0;
-  background: var(--paper);
-  color: var(--ink);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
 
 /* Mobile menu variant */
 .toolsInline {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   margin-top: 28px;
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.toolRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 48px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 10px;
-  background: none;
-  font-size: 17px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-}
-.toolRow svg {
-  width: 22px;
-  height: 22px;
-  flex: none;
-}
-.toolRow[aria-pressed="true"],
-.toolRow[aria-checked="true"] {
-  color: var(--blue);
-}
-.toolsInline .visionMenu {
-  padding: 8px 4px;
+.toolsTitle {
+  margin-bottom: 8px;
+  font: 600 12px/1.2 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
 }
 
 /* ---------- screen reader mode (1d) ---------- */

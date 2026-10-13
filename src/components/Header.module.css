@@ -39,6 +39,12 @@
   transform-origin: 0 50%;
 }
 
+.brandWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
 .brand {
   font-size: 16px;
   font-weight: 650;
@@ -46,6 +52,14 @@
   text-decoration: none;
   white-space: nowrap;
   border-radius: 6px;
+}
+.tagline {
+  font: 500 12.5px/1 var(--font-mono);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.header[data-theme="light"] .tagline {
+  color: var(--ink-2);
 }
 
 .links {
@@ -81,61 +95,40 @@
 .header[data-theme="light"] .link:hover,
 .header[data-theme="light"] .link[aria-current="true"] { color: var(--ink); }
 
-/* Reduce-motion switch (0e) */
-.switch {
+/* Email me — filled; light text on dark, ink on light sections. */
+.emailButton {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.track {
-  position: relative;
-  width: 40px;
-  height: 24px;
-  border-radius: 12px;
-  background: #3a3a42;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  transition: background-color 0.2s;
-}
-.thumb {
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--text);
-  transition: transform 0.2s var(--ease-expo), background-color 0.2s;
-}
-.switch:hover .track { background: #4a4a54; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
-.switch[aria-checked="true"] .track { background: var(--blue); box-shadow: none; }
-.switch[aria-checked="true"] .thumb { transform: translateX(16px); background: #000; }
-.header[data-theme="light"] .track { background: #c7c7cc; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
-.header[data-theme="light"] .thumb { background: #fff; }
-.header[data-theme="light"] .switch[aria-checked="true"] .track { background: var(--action); }
-
-.switchCompact {
-  width: 44px;
+  justify-content: center;
   height: 44px;
-  border: 0;
-  border-radius: 22px;
-  background: none;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.switchCompact[aria-checked="true"] {
-  background: var(--blue);
+  padding: 0 20px;
+  border-radius: 10px;
+  background: var(--text);
   color: #000;
-  box-shadow: none;
+  font-size: 15px;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s, transform 0.2s var(--ease-expo);
+}
+.emailButton:hover {
+  background: #fff;
+}
+.emailButton:active {
+  transform: scale(0.97);
+}
+.header[data-theme="light"] .emailButton {
+  background: var(--ink);
+  color: #fff;
+}
+.header[data-theme="light"] .emailButton:hover {
+  background: var(--action);
+}
+.emailWide {
+  width: 100%;
+  height: 52px;
+  margin-top: 24px;
+  font-size: 17px;
 }
 
 .menuButton {
@@ -150,8 +143,7 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
   cursor: pointer;
 }
-.header[data-theme="light"] .menuButton,
-.header[data-theme="light"] .switchCompact {
+.header[data-theme="light"] .menuButton {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
@@ -184,7 +176,7 @@
 .close::after { transform: rotate(-45deg); }
 
 .mobileOnly { display: none; gap: 6px; }
-.desktopOnly { display: flex; align-items: center; gap: 12px; }
+.desktopOnly { display: flex; align-items: center; gap: 10px; }
 
 .dialog {
   width: 100%;
@@ -230,7 +222,12 @@
   .mobileOnly { display: flex; }
 }
 
+/* Narrower desktops: drop the tagline, then the menu's visible text ("Aa" stays). */
+@media (max-width: 1365px) {
+  .tagline { display: none; }
+}
 @media (min-width: 1024px) and (max-width: 1199px) {
   .header { padding: 0 32px; }
-  .links { gap: 20px; }
+  .links { gap: 18px; }
+  .header :global([aria-controls]) > span:nth-child(2) { display: none; }
 }

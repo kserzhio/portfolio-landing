@@ -1,38 +1,13 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
-import { nav, person } from "@/content/site";
+import { links as contact, nav, person } from "@/content/site";
 import { ScrollTrigger } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
 import { HeaderTools } from "./features/HeaderTools";
 import s from "./Header.module.css";
 
 const HEADER_H = 60;
-
-function MotionSwitch({ compact = false }: { compact?: boolean }) {
-  const { reduced, setReduced } = useMotion();
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={reduced}
-      className={compact ? s.switchCompact : s.switch}
-      onClick={() => setReduced(!reduced)}
-      aria-label={compact ? "Reduce motion" : undefined}
-    >
-      {compact ? (
-        <span aria-hidden="true">Motion</span>
-      ) : (
-        <>
-          <span className={s.track} aria-hidden="true">
-            <span className={s.thumb} />
-          </span>
-          Reduce motion
-        </>
-      )}
-    </button>
-  );
-}
 
 export function Header() {
   const { mode, scrollTo } = useMotion();
@@ -141,9 +116,12 @@ export function Header() {
 
   return (
     <header className={s.header} data-theme={light ? "light" : undefined}>
-      <a href="#top" className={s.brand}>
-        {person.name}
-      </a>
+      <div className={s.brandWrap}>
+        <a href="#top" className={s.brand}>
+          {person.name}
+        </a>
+        <span className={s.tagline}>{person.tagline}</span>
+      </div>
 
       <nav aria-label="Main" className={s.nav}>
         <ul className={s.links}>{links}</ul>
@@ -151,11 +129,12 @@ export function Header() {
 
       <div className={s.desktopOnly}>
         <HeaderTools />
-        <MotionSwitch />
+        <a href={contact.email} className={s.emailButton}>
+          Email me
+        </a>
       </div>
 
       <div className={s.mobileOnly}>
-        <MotionSwitch compact />
         <button
           ref={menuButtonRef}
           type="button"
@@ -188,7 +167,10 @@ export function Header() {
         <nav aria-label="Main (menu)">
           <ul className={s.dialogLinks}>{links}</ul>
         </nav>
-        <HeaderTools inline />
+        <a href={contact.email} className={`${s.emailButton} ${s.emailWide}`}>
+          Email me
+        </a>
+        <HeaderTools inline onAction={() => dialogRef.current?.close()} />
       </dialog>
     </header>
   );

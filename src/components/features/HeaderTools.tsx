@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useFeatures, VISION_MODES, type VisionMode } from "@/lib/features";
+import { useMotion } from "@/lib/motion";
 import { downloadA11yReport } from "./XRay";
 import s from "./features.module.css";
 
 const Icon = {
+  motion: (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M4 12h3l2-5 4 10 2-5h5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   hear: (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
@@ -28,27 +34,148 @@ const Icon = {
   sound: (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
-      <path d="M17 9l4 6M21 9l-4 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" data-off />
-      <path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" data-on />
+      <path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  ),
+  report: (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
 };
 
-function VisionMenu({ inline }: { inline: boolean }) {
-  const { vision, setVision, lens, setLens } = useFeatures();
+/** One row: icon, label + hint, and a switch-style state indicator. */
+function ToggleRow({
+  icon,
+  label,
+  hint,
+  on,
+  kind,
+  onToggle,
+}: {
+  icon: ReactNode;
+  label: string;
+  hint: string;
+  on: boolean;
+  kind: "switch" | "pressed";
+  onToggle: () => void;
+}) {
+  const state = kind === "switch" ? { role: "switch", "aria-checked": on } : { "aria-pressed": on };
+  return (
+    <button type="button" className={s.row} {...state} onClick={onToggle}>
+      <span className={s.rowIcon}>{icon}</span>
+      <span className={s.rowText}>
+        <span className={s.rowLabel}>{label}</span>
+        <span className={s.rowHint}>{hint}</span>
+      </span>
+      <span className={s.rowTrack} aria-hidden="true">
+        <span />
+      </span>
+    </button>
+  );
+}
+
+function ToolsList({ onAction }: { onAction?: () => void }) {
+  const { reduced, setReduced } = useMotion();
+  const { reader, setReader, xray, setXray, sound, setSound, vision, setVision, lens, setLens } = useFeatures();
+  const groupId = useId();
+
+  return (
+    <div className={s.toolsList}>
+      <ToggleRow
+        icon={Icon.motion}
+        label="Reduce motion"
+        hint="Static scenes, short fades only"
+        on={reduced}
+        kind="switch"
+        onToggle={() => setReduced(!reduced)}
+      />
+      <ToggleRow
+        icon={Icon.hear}
+        label="Hear this page"
+        hint="Spoken tour of what's on screen"
+        on={reader}
+        kind="pressed"
+        onToggle={() => {
+          // Close the menu first so the spotlight tours the page, not the menu.
+          onAction?.();
+          requestAnimationFrame(() => setReader(!reader));
+        }}
+      />
+      <ToggleRow
+        icon={Icon.xray}
+        label="X-ray"
+        hint="Show landmarks, headings, focus order"
+        on={xray}
+        kind="switch"
+        onToggle={() => setXray(!xray)}
+      />
+      <ToggleRow
+        icon={Icon.sound}
+        label="Sound"
+        hint="Soft cues for focus and fixes"
+        on={sound}
+        kind="pressed"
+        onToggle={() => setSound(!sound)}
+      />
+
+      <fieldset className={s.visionGroup}>
+        <legend className={s.visionLegend}>
+          <span className={s.rowIcon}>{Icon.vision}</span>
+          Simulate vision
+        </legend>
+        <div className={s.visionOptions}>
+          {[{ id: "off" as VisionMode, label: "Off" }, ...VISION_MODES].map((m, i) => (
+            <label key={m.id} className={s.chip}>
+              <input type="radio" name={`vision-${groupId}`} checked={vision === m.id} onChange={() => setVision(m.id)} />
+              <span>
+                {i > 0 && <kbd aria-hidden="true">{i}</kbd>}
+                {m.label}
+              </span>
+            </label>
+          ))}
+        </div>
+        <label className={s.check}>
+          <input type="checkbox" checked={lens} onChange={(e) => setLens(e.target.checked)} />
+          Lens follows the cursor
+        </label>
+      </fieldset>
+
+      <button type="button" className={s.row} onClick={downloadA11yReport}>
+        <span className={s.rowIcon}>{Icon.report}</span>
+        <span className={s.rowText}>
+          <span className={s.rowLabel}>Accessibility report</span>
+          <span className={s.rowHint}>Download this page&rsquo;s structure (JSON)</span>
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * "Accessibility tools" — one header menu for the motion preference and the
+ * signature features (Developer Spec §11). Desktop: a disclosure button with a
+ * popover (Esc / outside click close it, focus returns to the button).
+ * `inline` renders the same list inside the mobile menu dialog.
+ */
+export function HeaderTools({ inline = false, onAction }: { inline?: boolean; onAction?: () => void }) {
+  const { reader, xray, vision, sound } = useFeatures();
+  const { reduced } = useMotion();
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const activeCount = [reduced, reader, xray, vision !== "off", sound].filter(Boolean).length;
 
   useEffect(() => {
-    if (!open || inline) return;
+    if (!open) return;
     const onDoc = (e: Event) => {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
-        wrapRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+        buttonRef.current?.focus();
       }
     };
     document.addEventListener("pointerdown", onDoc);
@@ -57,89 +184,46 @@ function VisionMenu({ inline }: { inline: boolean }) {
       document.removeEventListener("pointerdown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, inline]);
+  }, [open]);
 
-  const options = (
-    <fieldset className={s.visionMenu} id={menuId}>
-      <legend>Simulate vision</legend>
-      {[{ id: "off" as VisionMode, label: "Off" }, ...VISION_MODES].map((m, i) => (
-        <label key={m.id} className={s.radio}>
-          <input type="radio" name={`vision-${menuId}`} checked={vision === m.id} onChange={() => setVision(m.id)} />
-          {m.label}
-          {i > 0 && <kbd aria-hidden="true">{i}</kbd>}
-        </label>
-      ))}
-      <label className={s.radio}>
-        <input type="checkbox" checked={lens} onChange={(e) => setLens(e.target.checked)} />
-        Lens follows the cursor
-      </label>
-    </fieldset>
-  );
+  if (inline) {
+    return (
+      <section className={s.toolsInline} aria-labelledby={`${menuId}-title`}>
+        <h2 id={`${menuId}-title`} className={s.toolsTitle}>
+          Accessibility tools
+        </h2>
+        <ToolsList onAction={onAction} />
+      </section>
+    );
+  }
 
-  if (inline) return options;
   return (
-    <div ref={wrapRef} className={s.toolWrap}>
+    <div ref={wrapRef} className={s.toolsWrap}>
       <button
+        ref={buttonRef}
         type="button"
-        className={s.tool}
+        className={s.toolsButton}
         aria-expanded={open}
         aria-controls={menuId}
-        data-on={vision !== "off" || undefined}
+        // Label stays when the visible text collapses at narrow widths.
+        aria-label={`Accessibility tools${activeCount ? `, ${activeCount} on` : ""}`}
         onClick={() => setOpen(!open)}
-        aria-label="Vision simulator"
       >
-        {Icon.vision}
-        <span className={s.tip} aria-hidden="true">
-          Vision simulator
+        <span className={s.aa} aria-hidden="true">
+          Aa
         </span>
+        <span className={s.toolsLabel} aria-hidden="true">
+          Accessibility tools
+        </span>
+        {activeCount > 0 && (
+          <span className={s.toolsBadge} aria-hidden="true">
+            {activeCount}
+          </span>
+        )}
       </button>
-      {open && <div className={s.popover}>{options}</div>}
-    </div>
-  );
-}
-
-/**
- * Header controls for the signature features (Developer Spec §11):
- * Hear this page, X-ray, vision simulator, sound. `inline` renders them as
- * a labelled list for the mobile menu.
- */
-export function HeaderTools({ inline = false }: { inline?: boolean }) {
-  const { reader, setReader, xray, setXray, sound, setSound } = useFeatures();
-  const cls = inline ? s.toolRow : s.tool;
-  // Icon buttons get an explicit aria-label; the visible tooltip is decorative.
-  const label = (text: string) =>
-    inline ? <span>{text}</span> : (
-      <span className={s.tip} aria-hidden="true">
-        {text}
-      </span>
-    );
-  const name = (text: string) => (inline ? {} : { "aria-label": text });
-
-  return (
-    <div className={inline ? s.toolsInline : s.tools}>
-      <button type="button" className={cls} aria-pressed={reader} onClick={() => setReader(!reader)} {...name("Hear this page")}>
-        {Icon.hear}
-        {label("Hear this page")}
-      </button>
-      <button type="button" role="switch" className={cls} aria-checked={xray} onClick={() => setXray(!xray)} {...name("X-ray")}>
-        {Icon.xray}
-        {label("X-ray")}
-      </button>
-      <VisionMenu inline={inline} />
-      <button
-        type="button"
-        className={cls}
-        aria-pressed={sound}
-        data-sound={sound ? "on" : "off"}
-        onClick={() => setSound(!sound)}
-        {...name("Sound")}
-      >
-        {Icon.sound}
-        {label("Sound")}
-      </button>
-      <button type="button" className={inline ? s.toolRow : `${s.reportLink} sr-only-focusable`} onClick={downloadA11yReport}>
-        Download this site&rsquo;s accessibility report (JSON)
-      </button>
+      <div id={menuId} className={s.toolsMenu} hidden={!open} role="group" aria-label="Accessibility tools">
+        <ToolsList onAction={() => setOpen(false)} />
+      </div>
     </div>
   );
 }
