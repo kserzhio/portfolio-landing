@@ -22,13 +22,15 @@ export const links = {
   credential: "https://www.dhs.gov/trusted-tester",
 };
 
-export const nav = [
+/** In-page sections by id; an item with `href` is a separate page. */
+export const nav: { id: string; label: string; href?: string }[] = [
   { id: "journey", label: "Journey" },
   { id: "accessibility", label: "Accessibility" },
   { id: "certification", label: "Certification" },
   { id: "stack", label: "Stack" },
   { id: "contact", label: "Contact" },
-] as const;
+  { id: "team", label: "Team", href: "/team" },
+];
 
 /* ---------- Hero ---------- */
 

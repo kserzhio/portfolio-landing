@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { links as contact, nav, person } from "@/content/site";
 import { ScrollTrigger } from "@/lib/gsap";
@@ -51,8 +52,8 @@ export function Header() {
     if (!mode) return;
     const triggers: ScrollTrigger[] = [];
 
-    nav.forEach(({ id }) => {
-      const el = document.getElementById(id);
+    nav.forEach(({ id, href }) => {
+      const el = href ? null : document.getElementById(id);
       if (!el) return;
       triggers.push(
         ScrollTrigger.create({
@@ -101,16 +102,22 @@ export function Header() {
     });
   };
 
-  const links = nav.map(({ id, label }) => (
+  const links = nav.map(({ id, label, href }) => (
     <li key={id}>
-      <a
-        href={`#${id}`}
-        className={s.link}
-        aria-current={active === id ? "true" : undefined}
-        onClick={(e) => go(e, id)}
-      >
-        {label}
-      </a>
+      {href ? (
+        <Link href={href} className={s.link}>
+          {label}
+        </Link>
+      ) : (
+        <a
+          href={`#${id}`}
+          className={s.link}
+          aria-current={active === id ? "true" : undefined}
+          onClick={(e) => go(e, id)}
+        >
+          {label}
+        </a>
+      )}
     </li>
   ));
 

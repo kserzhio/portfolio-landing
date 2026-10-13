@@ -47,7 +47,7 @@ function computeMode(pref: Pref): MotionMode {
  * initial frame per mode. Without JS no data-motion is set and the page
  * renders its static, final states.
  */
-export const motionBootScript = `(function(){try{var d=document.documentElement,p=null;try{p=localStorage.getItem('${STORAGE_KEY}')}catch(e){}var r=p==='reduced'||(p!=='full'&&matchMedia('${Q_OS_REDUCED}').matches);d.dataset.motion=r?'reduced':(matchMedia('${Q_FULL}').matches?'full':'mobile');d.classList.add('js');try{if(!sessionStorage.getItem('loader-seen'))d.classList.add('loading')}catch(e){}}catch(e){}})();`;
+export const motionBootScript = `(function(){try{var d=document.documentElement,p=null;try{p=localStorage.getItem('${STORAGE_KEY}')}catch(e){}var r=p==='reduced'||(p!=='full'&&matchMedia('${Q_OS_REDUCED}').matches);d.dataset.motion=r?'reduced':(matchMedia('${Q_FULL}').matches?'full':'mobile');d.classList.add('js');try{if(location.pathname==='/'&&!sessionStorage.getItem('loader-seen'))d.classList.add('loading')}catch(e){}}catch(e){}})();`;
 
 type ScrollToOptions = { offset?: number; duration?: number; onComplete?: () => void };
 
