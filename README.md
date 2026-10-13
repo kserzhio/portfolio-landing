@@ -83,7 +83,7 @@ first tab stop; the page underneath is `inert` and `<main aria-busy>` until reve
 > can't be published under the client's policy.
 
 
-- Real career years, contact links, CV PDF
+- CV PDF
   (`src/content/site.ts`, put the PDF in `public/cv.pdf`).
 - Per-technology experience notes in `stack` are drafts — review them.
 - Laptop: `components/laptop3d.ts` is the procedural model from "Laptop 3D"

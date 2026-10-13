@@ -99,7 +99,7 @@ export const chapters: Chapter[] = [
   {
     id: "ch2",
     index: "02",
-    year: "[2017]",
+    year: "2017",
     rail: "Themes & PWAs",
     title: "WordPress, Vue.js, Nuxt.js, PHP",
     text: "Custom WordPress themes for high-traffic company sites; calculators and order forms with Ajax and secure PHP-Mailer handling; fast PWAs on Nuxt.js.",
@@ -109,7 +109,7 @@ export const chapters: Chapter[] = [
   {
     id: "ch3",
     index: "03",
-    year: "[2019]",
+    year: "2019",
     rail: "Business apps",
     title: "Vue.js, Angular, Node.js",
     text: "Full-cycle business applications: Vuetify and Element UI, Angular Material, data-entry forms, role-based auth and ApexCharts / Chart.js dashboards on Node.js + MongoDB APIs.",
@@ -119,7 +119,7 @@ export const chapters: Chapter[] = [
   {
     id: "ch4",
     index: "04 · NOW",
-    year: "[2022]",
+    year: "2022",
     rail: "Accessibility",
     title: "Angular UI → ",
     titleAccent: "Accessibility",

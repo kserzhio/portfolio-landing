@@ -22,7 +22,7 @@ function screenFor(section: string, chapter: number, fixed: number): Screen | nu
       const c = chapters[chapter];
       return {
         title: `chapter-${c.index.slice(0, 2)}.json`,
-        lines: [{ t: `"${c.year.replace(/[[\]]/g, "")}"`, c: GREEN }, ...c.tags.slice(0, 6).map((t) => ({ t: `· ${t}`, c: VIOLET }))],
+        lines: [{ t: `"${c.year}"`, c: GREEN }, ...c.tags.slice(0, 6).map((t) => ({ t: `· ${t}`, c: VIOLET }))],
       };
     }
     case "accessibility":
