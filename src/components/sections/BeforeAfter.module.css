@@ -605,14 +605,15 @@
 }
 .tagBefore { left: 0; background: var(--error); }
 .tagAfter { right: 0; background: var(--success); }
+/* Stays inside the card; ends fade out instead of stopping abruptly. */
 .divider {
   position: absolute;
   left: var(--x);
-  top: -20px;
-  bottom: -20px;
+  top: 24px;
+  bottom: 24px;
   width: 2px;
   margin-left: -1px;
-  background: var(--ink);
+  background: linear-gradient(180deg, transparent, var(--ink) 14%, var(--ink) 86%, transparent);
   pointer-events: none;
 }
 .knob {
