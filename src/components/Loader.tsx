@@ -147,48 +147,10 @@ export function Loader() {
         .to(geo, { ...frame, duration: 0.9, ease: "expo.inOut", onUpdate: () => setGeo(geo) }, 0)
         .to(root.querySelector("[data-fill]"), { opacity: 0, duration: 0.9, ease: "expo.inOut" }, 0);
 
-      // Name → header logo. The real logo stays hidden (html.loading) while the
-      // name flies; during the flight the name's tracking and weight morph to
-      // the logo's, so at the landing they match and simply crossfade.
-      const br = brand?.getBoundingClientRect();
-      if (br && !mobile) {
-        const cs = getComputedStyle(brand!);
-        const logoSize = parseFloat(cs.fontSize);
-        const nameSize = parseFloat(getComputedStyle(name).fontSize);
-        const scale = logoSize / nameSize;
-        // Measure the name with the logo's tracking/weight (still centred at its spot).
-        const from = { letterSpacing: name.style.letterSpacing, fontWeight: name.style.fontWeight };
-        name.style.letterSpacing = `${parseFloat(cs.letterSpacing) / logoSize || -0.01}em`;
-        name.style.fontWeight = cs.fontWeight;
-        const end = name.getBoundingClientRect();
-        name.style.letterSpacing = from.letterSpacing;
-        name.style.fontWeight = from.fontWeight;
-        // Land with the name's left edge and vertical centre on the logo's text box.
-        const range = document.createRange();
-        range.selectNodeContents(brand!);
-        const text = range.getBoundingClientRect();
-        const targetCx = text.left + (end.width * scale) / 2;
-        const targetCy = text.top + text.height / 2;
-        tl.to(
-          name,
-          {
-            x: targetCx - (end.left + end.width / 2),
-            y: targetCy - (end.top + end.height / 2),
-            scale,
-            letterSpacing: `${parseFloat(cs.letterSpacing) / logoSize || -0.01}em`,
-            fontWeight: cs.fontWeight,
-            duration: 0.9,
-            ease: "expo.inOut",
-          },
-          0,
-        )
-          .to(name, { opacity: 0, duration: 0.25 }, 0.95)
-          .to(brand!, { opacity: 1, duration: 0.25 }, 0.95);
-      } else {
-        // Mobile (two-line name) or no logo: fade out, logo fades in.
-        tl.to(name, { opacity: 0, duration: 0.35 }, 0.1);
-        if (brand) tl.to(brand, { opacity: 1, duration: 0.3 }, 0.9);
-      }
+      // The name fades out: the first screen is the laptop alone (the header
+      // only appears once the camera is inside the screen, lib/screen.ts).
+      tl.to(name, { opacity: 0, duration: 0.35 }, 0.1);
+      if (brand) tl.to(brand, { opacity: 1, duration: 0.3 }, 0.9);
 
       // Then the frame keeps growing to full bleed — corners straighten, the
       // black margin closes to nothing — while the ring fades out.

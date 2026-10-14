@@ -88,19 +88,6 @@
   color: var(--text-2);
 }
 
-.role {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(230 * var(--sx));
-  display: none;
-  text-align: center;
-  font-size: max(14px, calc(19 * var(--sx)));
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--text-2);
-}
-
 /* Soft violet light; follows the cursor on fine pointers (v2 1c). */
 .cursorLight {
   position: absolute;
@@ -247,9 +234,13 @@
 :global([data-motion="full"]) .name,
 :global([data-motion="full"]) .sub,
 :global([data-motion="full"]) .intro { opacity: 0; }
-:global([data-motion="full"]) .role { display: block; }
-:global([data-motion="full"]) .hint { display: flex; }
-:global([data-motion="full"]) .progress { display: block; }
+:global([data-motion="full"]) .hint {
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-expo);
+}
+.hero[data-hint] .hint { opacity: 1; }
+:global([data-motion="full"]) .progress { display: block; opacity: 0; }
 :global([data-motion="full"]) .chip { opacity: 0; }
 :global([data-motion="full"]) .laptopWrap { transform: translateY(21.154%) scale(1.2); }
 :global([data-motion="full"]) .laptopWrap > * { --open: 0; --lines: 0; --glow: 0.15; }
@@ -325,7 +316,6 @@
     transform: none;
   }
 
-  .role,
   .hint,
   .progress,
   .cursorLight { display: none !important; }

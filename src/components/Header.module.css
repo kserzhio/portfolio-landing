@@ -23,6 +23,19 @@
   color: var(--ink);
 }
 
+/* Full motion: outside the laptop (first screen, after the lid shuts) only the
+   laptop shows; the header fades in with the screen frame. Keyboard focus
+   brings it back at any time, and it stays in the accessibility tree. */
+:global([data-motion="full"]) .header {
+  opacity: var(--frame);
+}
+:global([data-motion="full"]) .header:focus-within {
+  opacity: 1;
+}
+.header[data-offscreen]:not(:focus-within) {
+  pointer-events: none;
+}
+
 /* Page scroll indicator along the header's bottom edge. */
 .progress {
   position: absolute;

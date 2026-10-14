@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { links as contact, nav, person } from "@/content/site";
-import { ScrollTrigger } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useMotion } from "@/lib/motion";
 import { HeaderTools } from "./features/HeaderTools";
 import s from "./Header.module.css";
@@ -45,6 +45,28 @@ export function Header() {
     };
   }, []);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // While the header is faded out (outside the laptop's screen), it must not
+  // catch clicks meant for the page. Reads the frame state the scrubbed
+  // timelines write on <html> (lib/screen.ts).
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    if (mode !== "full") {
+      header.removeAttribute("data-offscreen");
+      return;
+    }
+    const html = document.documentElement;
+    const read = () => {
+      const cs = getComputedStyle(html);
+      const frame = parseFloat(cs.getPropertyValue("--frame-in")) - parseFloat(cs.getPropertyValue("--frame-out"));
+      header.toggleAttribute("data-offscreen", !(frame > 0.5));
+    };
+    read();
+    gsap.ticker.add(read);
+    return () => gsap.ticker.remove(read);
+  }, [mode]);
 
   // Active link + light variant over light sections. Rebuilt per mode so
   // positions include pin spacing; refreshPriority -1 = measured after pins.
@@ -122,7 +144,7 @@ export function Header() {
   ));
 
   return (
-    <header className={s.header} data-theme={light ? "light" : undefined}>
+    <header ref={headerRef} className={s.header} data-theme={light ? "light" : undefined}>
       <div className={s.brandWrap}>
         <a href="#top" className={s.brand}>
           {person.name}

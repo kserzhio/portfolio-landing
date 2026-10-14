@@ -114,6 +114,22 @@ export function Hero() {
     const name = q(`.${s.name}`)[0];
     const split = SplitText.create(name, { type: "chars", aria: "auto" });
 
+    // First screen: the closed laptop alone. A "Scroll to open" hint appears
+    // only if the visitor hasn't scrolled after a moment; the hero's progress
+    // bar and the pause button arrive with what they belong to.
+    let lastP = 0;
+    const pause = q(`.${s.pause}`);
+    gsap.set(pause, { autoAlpha: 0 });
+    let hintTimer = 0;
+    const startHint = () => {
+      hintTimer = window.setTimeout(() => {
+        if (lastP <= 0.02) section.setAttribute("data-hint", "");
+      }, 2500);
+    };
+    if (document.documentElement.classList.contains("loading")) {
+      window.addEventListener("loader:done", startHint, { once: true });
+    } else startHint();
+
     gsap.set(laptop, { "--open": 0, "--lines": 0, "--glow": 0.15 });
     gsap.set(wrap, { y: 0, yPercent: CAM.closed[0], scale: CAM.closed[1] });
     gsap.set(name, { opacity: 1 });
@@ -126,7 +142,6 @@ export function Hero() {
       gsap.set(el, { opacity: 0, "--fx": SCREEN.x - x, "--fy": SCREEN.y - y, "--fs": 0.2, "--b": 8 });
     });
 
-    let lastP = 0;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
@@ -139,6 +154,7 @@ export function Hero() {
         onUpdate: (st) => {
           const t = st.progress * END;
           if (st.direction > 0 && t > 0.03 && lastP <= 0.03) cue("lid-open");
+          if (t > 0.02) section.removeAttribute("data-hint");
           lastP = t;
           if (orbit.current) {
             orbit.current.settled = t > 0.8 && t < DIVE + 0.1;
@@ -151,7 +167,7 @@ export function Hero() {
     tl.to(laptop, { "--open": 1, duration: 0.35, ease: ease.power3 }, 0)
       .to(laptop, { "--glow": 0.85, duration: 0.35 }, 0)
       .to(q(`.${s.bgFinal}`), { opacity: 1, duration: 0.35 }, 0)
-      .to(q(`.${s.role}, .${s.hint}`), { opacity: 0, y: -20, duration: 0.15 }, 0)
+      .to(q(`.${s.progress}`), { opacity: 1, duration: 0.04 }, 0.01)
       .to(laptop, { "--lines": 6, duration: 0.3, ease: "steps(6)" }, 0.2)
       .to(wrap, { yPercent: CAM.push[0], scale: CAM.push[1], duration: 0.25 }, 0.3)
       .to(
@@ -172,7 +188,9 @@ export function Hero() {
       .to(split.chars, { opacity: 1, yPercent: 0, duration: 0.08, stagger: 0.14 / split.chars.length, ease: ease.expo }, 0.78)
       .to(q(`.${s.sub}, .${s.intro}`), { opacity: 1, y: 0, duration: 0.15, stagger: 0.03, ease: ease.expo }, 0.85)
       .fromTo(q(`.${s.progress} span`), { scaleX: 0 }, { scaleX: 1, duration: END }, 0)
-      .to(q(`.${s.cursorLight}`), { opacity: 1, duration: 0.2 }, 0.8);
+      .to(q(`.${s.cursorLight}`), { opacity: 1, duration: 0.2 }, 0.8)
+      // The orbit starts moving once the scene settles; its pause control comes with it (WCAG 2.2.2).
+      .to(pause, { autoAlpha: 1, duration: 0.05 }, 0.8);
 
     // The dive: text and chips clear, the camera flies into the screen until it
     // covers the viewport, the screen fades to the page colour and the CSS screen
@@ -241,6 +259,9 @@ export function Hero() {
     }
 
     return () => {
+      clearTimeout(hintTimer);
+      window.removeEventListener("loader:done", startHint);
+      section.removeAttribute("data-hint");
       if (onMove) pin.removeEventListener("pointermove", onMove);
       io.disconnect();
       tweens.forEach((t) => t.kill());
@@ -264,9 +285,6 @@ export function Hero() {
             </p>
             <p className={s.intro}>{person.intro}</p>
           </div>
-          <p className={s.role} aria-hidden="true">
-            {person.role}
-          </p>
           <div className={s.scene}>
             <ChipLayer id="back" />
             <div className={s.laptopWrap}>
