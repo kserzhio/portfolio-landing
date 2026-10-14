@@ -652,44 +652,6 @@
   outline-offset: 4px;
 }
 
-/* ---------- 11.6 · the page breaks, then heals ---------- */
-.heal {
-  position: fixed;
-  inset: 0;
-  z-index: 45;
-  pointer-events: none;
-  opacity: 0;
-  -webkit-backdrop-filter: contrast(0.35) brightness(1.3);
-  backdrop-filter: contrast(0.35) brightness(1.3);
-}
-.healWave {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--blue), var(--violet), transparent);
-  box-shadow: 0 0 24px rgba(91, 156, 255, 0.6);
-}
-/* Broken: labels vanish, focus outlines disappear, text jitters 2px. */
-.section[data-broken] .label,
-.section[data-broken] .tooltip,
-.section[data-broken] .ring,
-.section[data-broken] .colLabel,
-.section[data-broken] .progressLabel {
-  opacity: 0 !important;
-}
-.section[data-broken] .title,
-.section[data-broken] .form,
-.section[data-broken] .cards {
-  animation: jitter 0.16s steps(2) infinite;
-}
-@keyframes jitter {
-  0% { transform: translate(0, 0); }
-  50% { transform: translate(2px, -1px); }
-  100% { transform: translate(-1px, 1px); }
-}
-
 /* ---------- full motion: pinned ---------- */
 :global([data-motion="full"]) .pin {
   height: 100svh;

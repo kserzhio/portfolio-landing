@@ -230,37 +230,8 @@ export function BeforeAfter() {
     }
   };
 
-  // "The page breaks, then heals" (spec 11.6): one-shot, time-based, once per
-  // visit. Visual only — a backdrop-filter layer plus presentational classes.
-  const healRef = useRef<HTMLDivElement>(null);
-  const heal = () => {
-    try {
-      if (sessionStorage.getItem("healed")) return;
-      sessionStorage.setItem("healed", "1");
-    } catch {
-      /* storage unavailable: may replay */
-    }
-    const section = ref.current!;
-    const layer = healRef.current!;
-    gsap
-      .timeline({ onComplete: () => gsap.set(layer, { clearProps: "all" }) })
-      .call(() => section.setAttribute("data-broken", ""))
-      .set(layer, { opacity: 1, clipPath: "inset(0% 0% 0% 0%)" })
-      .to({}, { duration: 0.5 + 0.3 }) // break, hold
-      .to(layer, { clipPath: "inset(100% 0% 0% 0%)", duration: 0.8, ease: "power2.inOut" })
-      .fromTo(layer.firstElementChild, { yPercent: 0 }, { yPercent: 100 * (innerHeight / 3), duration: 0.8, ease: "power2.inOut" }, "<")
-      .call(() => section.removeAttribute("data-broken"), [], "<0.35")
-      .set(layer, { opacity: 0 });
-  };
-
   useSectionMotion(ref, (mode) => {
     if (mode === "reduced") return update(TOTAL);
-    ScrollTrigger.create({
-      trigger: ref.current,
-      start: mode === "full" ? "top top" : "top 40%",
-      once: true,
-      onEnter: heal,
-    });
     if (mode === "mobile") return update(0);
 
     update(0);
@@ -281,9 +252,6 @@ export function BeforeAfter() {
 
   return (
     <section ref={ref} id="accessibility" className={s.section} data-theme="light" aria-labelledby="a11y-title">
-      <div ref={healRef} className={s.heal} aria-hidden="true">
-        <span className={s.healWave} />
-      </div>
       <div className={s.pin}>
         <div className={s.head}>
           <div>

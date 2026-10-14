@@ -26,8 +26,8 @@ const COLORS = { p: "#8a8a96", t: "#7cc4ff", a: "#c4a7ff", s: "#9be3b0", x: "#f5
  * "Dive into the code" (Developer Spec §11.5, mockups 3f → 3g): a pinned bridge
  * between Journey and Before / After. The page already runs inside the laptop's
  * screen (lib/screen.ts), so the old step A — a second laptop zooming in — is gone:
- *   B · the screen shows the next section's markup — scattered, rotated,
- *       depth-blurred lines drift into alignment
+ *   B · the next section's markup is on screen from the start — scattered,
+ *       rotated, depth-blurred — and the lines drift into alignment as you scroll
  *   C · lines snap into place and a light circle wipe reveals section 4
  * Decorative (aria-hidden); full-motion mode only — reduced / mobile get a plain break.
  */
@@ -44,19 +44,18 @@ export function DiveBridge() {
     gsap.set(lines, {
       x: (i) => LINES[i].scatter[0],
       rotation: (i) => LINES[i].scatter[1],
-      opacity: 0,
+      opacity: (i) => LINES[i].scatter[2],
       filter: (i) => `blur(${LINES[i].scatter[3]}px)`,
     });
+    gsap.set(q(`.${s.markupBg}`), { opacity: 1 });
 
     gsap
       .timeline({
         defaults: { ease: "none" },
         scrollTrigger: { trigger: pin, start: "top top", end: "+=110%", pin: true, scrub: 0.8, invalidateOnRefresh: true },
       })
-      // B · the page as markup
-      .fromTo(q(`.${s.markupBg}`), { opacity: 0 }, { opacity: 1, duration: 0.12 }, 0)
-      .to(lines, { opacity: (i) => LINES[i].scatter[2], duration: 0.1, stagger: 0.008 }, 0.04)
-      .to(lines, { x: 0, rotation: 0, opacity: 1, filter: "blur(0px)", duration: 0.36, stagger: 0.01, ease: ease.expo }, 0.14)
+      // B · the page as markup, assembling
+      .to(lines, { x: 0, rotation: 0, opacity: 1, filter: "blur(0px)", duration: 0.45, stagger: 0.01, ease: ease.power3 }, 0)
       // C · markup reassembles, circle wipe into section 4
       .to(q(`.${s.code}`), { opacity: 0.35, duration: 0.1 }, 0.56)
       // --r lives on the pin so the wipe and its glowing edge stay in sync.
