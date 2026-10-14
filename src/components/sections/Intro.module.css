@@ -2,6 +2,16 @@
 .intro {
   background: var(--night);
 }
+/* Full motion: overlap the hero's last pinned viewport (see Hero END) so the
+   About text rises the moment the camera is inside the screen. */
+:global([data-motion="full"]) .intro {
+  position: relative;
+  z-index: 21;
+  margin-top: -100svh;
+}
+:global([data-motion="full"]) .pin {
+  padding-top: 112px;
+}
 
 .pin {
   padding: 150px var(--gutter) 120px;

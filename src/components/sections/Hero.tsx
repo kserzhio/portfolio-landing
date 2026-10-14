@@ -17,7 +17,10 @@ const CAM = { closed: [21.154, 1.2], push: [15.385, 1.4], settled: [84.231, 0.72
 // Timeline units: 0–1 is the opening (spec §1); DIVE…END the camera enters the
 // screen and the page continues inside it (lib/screen.ts).
 const DIVE = 1.1;
-const END = 1.55;
+// The screen has turned page-coloured by DIVE + 0.36; the pin then holds one
+// more viewport (1/3 of the 300vh unit) while Intro, pulled up by 100svh,
+// rises over it — so the page continues straight away, not after an empty screen.
+const END = DIVE + 0.36 + 1 / 3;
 
 const layerOf = (c: Chip) => (c.depth === 0 ? "front" : c.depth < 0.5 ? "mid" : "back");
 // SkillChip v2: blur = depth × 7px, opacity = 1 − depth × 0.6.
