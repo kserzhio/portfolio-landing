@@ -337,9 +337,9 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
   const blankPanel = mesh(roundedPanel(DW, DH, 0.002), blank, [0, chin, 0.0007]);
   lid.add(blankPanel);
   lid.add(mesh(new THREE.CircleGeometry(0.0012, 24), M.rubber, [0, chin + DH + (H - chin - DH) / 2, 0.0007]));
-  const screenLight = new THREE.PointLight(0x8fb2ff, 0.02, 0.45, 2);
-  screenLight.position.set(0, 0.09, 0.07);
-  lid.add(screenLight);
+  // No point light for the screen's glow: as the lid swung open it passed
+  // close to the metal deck and left a flashlight-like hotspot on the trackpad.
+  // The soft spill comes from the CSS floor glow instead.
 
   // Light leaking through the seam once the lid is shut (frame 8b).
   const seam = new THREE.Mesh(
@@ -403,7 +403,6 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
     lid.rotation.x = Math.PI / 2 - s.open * (Math.PI / 2 + 0.3);
     const on = clamp01((s.open - 0.25) / 0.35);
     display.color.setScalar(on);
-    screenLight.intensity = 0.045 * s.glow * on;
     (seam.material as THREE.MeshBasicMaterial).opacity = s.seam;
     (seamGlow.material as THREE.MeshBasicMaterial).opacity = s.seam;
     seam.visible = seamGlow.visible = s.seam > 0.001;
