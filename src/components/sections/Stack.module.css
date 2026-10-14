@@ -1,11 +1,14 @@
 /* Tech stack — mockups 6a / 6m, tile states from 0e */
 .section {
+  position: relative;
+}
+.screen {
   padding: 120px var(--gutter);
   background: var(--night);
 }
-/* Full motion: Stack's last viewport slides up over the pinned Contact, so
-   the camera starts pulling out of the screen right beneath it (no empty
-   screen in between). See Contact's timeline. */
+/* Full motion: Stack's last viewport sits over the pinned Contact; Contact's
+   timeline pins it there and scales it down into the laptop's screen while
+   the camera pulls out (mirror of the hero's dive). */
 :global([data-motion="full"]) .section {
   z-index: 21;
   margin-bottom: -100svh;
@@ -166,7 +169,7 @@
 }
 
 @media (max-width: 1023px) {
-  .section { padding: 56px var(--gutter) 72px; }
+  .screen { padding: 56px var(--gutter) 72px; }
   .cats { gap: 18px; margin-top: 32px; }
   .cat {
     grid-template-columns: 1fr;

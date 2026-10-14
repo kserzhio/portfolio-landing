@@ -151,35 +151,38 @@ export function Stack() {
   };
 
   return (
-    <section ref={ref} id="stack" className={`${s.section} grain`} aria-labelledby="stack-title">
-      <h2 id="stack-title" className={s.title} tabIndex={-1}>
-        The stack, reassembled.
-      </h2>
-      <p className={s.lead}>
-        {inline ? "Tap any technology for where I've used it." : "Hover or focus any tile for where I've used it."}
-      </p>
-      <div className={s.cats}>
-        {stack.map((cat) => (
-          <div key={cat.name} className={s.cat}>
-            <h3 className={s.catName}>{cat.name}</h3>
-            <ul className={s.tiles}>
-              {cat.items.map((item) => {
-                const id = `tech-${item.mono.toLowerCase().replace(/[^a-z0-9]/g, "")}-${cat.name.length}`;
-                return (
-                  <Tile
-                    key={item.name}
-                    id={id}
-                    item={item}
-                    open={openId === id}
-                    inline={inline}
-                    onOpen={open(id)}
-                    onClose={close(id)}
-                  />
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+    <section ref={ref} id="stack" className={s.section} aria-labelledby="stack-title">
+      {/* Background + content as one layer: in full motion Contact scales it into the laptop's screen. */}
+      <div className={`${s.screen} grain`} data-stack-screen>
+        <h2 id="stack-title" className={s.title} tabIndex={-1}>
+          The stack, reassembled.
+        </h2>
+        <p className={s.lead}>
+          {inline ? "Tap any technology for where I've used it." : "Hover or focus any tile for where I've used it."}
+        </p>
+        <div className={s.cats}>
+          {stack.map((cat) => (
+            <div key={cat.name} className={s.cat}>
+              <h3 className={s.catName}>{cat.name}</h3>
+              <ul className={s.tiles}>
+                {cat.items.map((item) => {
+                  const id = `tech-${item.mono.toLowerCase().replace(/[^a-z0-9]/g, "")}-${cat.name.length}`;
+                  return (
+                    <Tile
+                      key={item.name}
+                      id={id}
+                      item={item}
+                      open={openId === id}
+                      inline={inline}
+                      onOpen={open(id)}
+                      onClose={close(id)}
+                    />
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

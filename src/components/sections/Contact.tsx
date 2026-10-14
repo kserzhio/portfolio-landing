@@ -2,10 +2,10 @@
 
 import { useRef } from "react";
 import { links } from "@/content/site";
-import { gsap, ease } from "@/lib/gsap";
+import { gsap, ease, ScrollTrigger } from "@/lib/gsap";
 import { magnetic } from "@/lib/magnetic";
 import { scrollOnFocus, useMotion, useSectionMotion } from "@/lib/motion";
-import { boxIn, coverScreen, OPEN_FACING } from "@/lib/screen";
+import { BEZEL, boxIn, coverScreen, OPEN_FACING } from "@/lib/screen";
 import { cue } from "@/lib/sound";
 import { VisitSummary } from "../features/Extras";
 import { Laptop } from "../Laptop";
@@ -39,18 +39,34 @@ export function Contact() {
     // full: the page has been scrolling inside the laptop's screen. Pinned, the
     // camera pulls back out of it (mirror of the hero's dive), the headline and
     // buttons rise in around the laptop, then the lid shuts (v2 frame 8b).
-    // The first viewport of the pin runs under Stack, which slides up over it
-    // (Stack.module.css), so the pull-out is revealed as the page leaves.
+    // Zoom-out: Stack's last viewport is pinned over Contact and scaled with the
+    // exact transform that takes the laptop from "screen fills the view" back
+    // to its place — so the page visibly shrinks into the laptop's screen.
     const pin = q(`.${s.pin}`)[0] as HTMLElement;
     const cover = () => coverScreen(boxIn(laptop as HTMLElement, pin), pin.clientWidth, pin.clientHeight);
-    const SHOWN = 0.52; // headline + buttons fully in
+    const PIN = 2.6; // pin length in viewports
+    const ZOOM = 0.4; // timeline span of the pull-out
+    const SHOWN = 0.58; // headline + buttons fully in
+    const stack = document.getElementById("stack");
+    const page = stack?.querySelector<HTMLElement>("[data-stack-screen]") ?? null;
+    if (stack && page) {
+      ScrollTrigger.create({
+        trigger: stack,
+        start: "bottom bottom",
+        end: () => `+=${(ZOOM + 0.08) * PIN * innerHeight}`,
+        pin: true,
+        pinSpacing: false,
+      });
+    }
+    // The pinned page's top edge sits (height − viewport) above the viewport top.
+    const pageTop = () => (page ? page.offsetHeight - pin.clientHeight : 0);
     let lastP = 0;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
         trigger: pin,
         start: "top top",
-        end: "+=260%",
+        end: `+=${PIN * 100}%`,
         pin: true,
         scrub: 0.8,
         invalidateOnRefresh: true,
@@ -64,22 +80,56 @@ export function Contact() {
     tl.fromTo(
       laptop,
       { transformOrigin: "0 0", x: () => cover().x, y: () => cover().y, scale: () => cover().scale },
-      { x: 0, y: 0, scale: 1, duration: 0.38, ease: "power2.inOut" },
+      { x: 0, y: 0, scale: 1, duration: ZOOM, ease: "power2.inOut" },
       0.02,
-    )
-      // The screen frame hands over to the model's bezel while Stack slides away.
-      .fromTo(document.documentElement, { "--frame-out": 0 }, { "--frame-out": 1, duration: 0.14 }, 0.02)
-      .fromTo(
-        laptop,
-        { "--open": OPEN_FACING, "--blank": 1, "--glow": 0 },
-        { "--open": 1, "--blank": 0, "--glow": 0.7, duration: 0.2, immediateRender: true },
-        0.2,
+    );
+    if (page) {
+      // Clip the page to the screen opening (rounded like the frame), then glue it
+      // to the display: same ease and timing as the laptop, inverse of the cover.
+      tl.set(
+        page,
+        {
+          clipPath: () =>
+            `inset(${pageTop() + BEZEL}px ${BEZEL}px ${BEZEL}px ${BEZEL}px round ${getComputedStyle(document.documentElement).getPropertyValue("--screen-r").trim() || "18px"})`,
+        },
+        0.001,
       )
+        .fromTo(
+          page,
+          {
+            x: 0,
+            y: 0,
+            scale: 1,
+            transformOrigin: () => {
+              const c = cover();
+              const b = boxIn(laptop as HTMLElement, pin);
+              return `${b.left + c.x}px ${pageTop() + b.top + c.y}px`;
+            },
+          },
+          {
+            x: () => -cover().x,
+            y: () => -cover().y,
+            scale: () => 1 / cover().scale,
+            duration: ZOOM,
+            ease: "power2.inOut",
+            immediateRender: false,
+          },
+          0.02,
+        )
+        .to(page, { opacity: 0, duration: 0.08 }, ZOOM);
+    }
+    tl
+      // The frame hands over to the clipped page and the model's bezel.
+      .fromTo(document.documentElement, { "--frame-out": 0 }, { "--frame-out": 1, duration: 0.06 }, 0.02)
+      .fromTo(laptop, { "--glow": 0 }, { "--glow": 0.7, duration: 0.3 }, 0.1)
+      // As the page fades off the screen, the screen shows its own content again.
+      .fromTo(laptop, { "--blank": 1 }, { "--blank": 0, duration: 0.1 }, ZOOM - 0.02)
+      .fromTo(laptop, { "--open": OPEN_FACING }, { "--open": 1, duration: 0.1 }, ZOOM + 0.04)
       .fromTo(
         q(`.${s.title}, .${s.actions}, .${s.summary}`),
         { y: 40, opacity: 0 },
         { y: 0, opacity: 1, stagger: 0.04, duration: 0.12, ease: ease.expo },
-        SHOWN - 0.16,
+        SHOWN - 0.14,
       )
       .to(laptop, { "--open": 0, "--glow": 0.2, duration: 0.24, ease: ease.power3 }, 0.66)
       .fromTo(laptop, { "--seam": 0 }, { "--seam": 1, duration: 0.05 }, 0.9)
