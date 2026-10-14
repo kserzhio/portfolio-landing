@@ -3,6 +3,13 @@
   padding: 120px var(--gutter);
   background: var(--night);
 }
+/* Full motion: Stack's last viewport slides up over the pinned Contact, so
+   the camera starts pulling out of the screen right beneath it (no empty
+   screen in between). See Contact's timeline. */
+:global([data-motion="full"]) .section {
+  z-index: 21;
+  margin-bottom: -100svh;
+}
 
 .title {
   font-size: clamp(40px, 5.6vw, 80px);

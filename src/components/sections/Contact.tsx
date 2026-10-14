@@ -39,16 +39,18 @@ export function Contact() {
     // full: the page has been scrolling inside the laptop's screen. Pinned, the
     // camera pulls back out of it (mirror of the hero's dive), the headline and
     // buttons rise in around the laptop, then the lid shuts (v2 frame 8b).
+    // The first viewport of the pin runs under Stack, which slides up over it
+    // (Stack.module.css), so the pull-out is revealed as the page leaves.
     const pin = q(`.${s.pin}`)[0] as HTMLElement;
     const cover = () => coverScreen(boxIn(laptop as HTMLElement, pin), pin.clientWidth, pin.clientHeight);
-    const SHOWN = 0.5; // headline + buttons fully in
+    const SHOWN = 0.52; // headline + buttons fully in
     let lastP = 0;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
         trigger: pin,
         start: "top top",
-        end: "+=220%",
+        end: "+=260%",
         pin: true,
         scrub: 0.8,
         invalidateOnRefresh: true,
@@ -63,11 +65,10 @@ export function Contact() {
       laptop,
       { transformOrigin: "0 0", x: () => cover().x, y: () => cover().y, scale: () => cover().scale },
       { x: 0, y: 0, scale: 1, duration: 0.38, ease: "power2.inOut" },
-      0.04,
+      0.02,
     )
-      .fromTo(document.documentElement, { "--frame-out": 0 }, { "--frame-out": 1, duration: 0.05 }, 0)
-      // Until the pin starts the section reads as more page; then the giant laptop shows through.
-      .fromTo(q(`.${s.bgNight}`), { opacity: 1 }, { opacity: 0, duration: 0.03 }, 0)
+      // The screen frame hands over to the model's bezel while Stack slides away.
+      .fromTo(document.documentElement, { "--frame-out": 0 }, { "--frame-out": 1, duration: 0.14 }, 0.02)
       .fromTo(
         laptop,
         { "--open": OPEN_FACING, "--blank": 1, "--glow": 0 },
@@ -77,8 +78,8 @@ export function Contact() {
       .fromTo(
         q(`.${s.title}, .${s.actions}, .${s.summary}`),
         { y: 40, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.06, duration: 0.14, ease: ease.expo },
-        SHOWN - 0.2,
+        { y: 0, opacity: 1, stagger: 0.04, duration: 0.12, ease: ease.expo },
+        SHOWN - 0.16,
       )
       .to(laptop, { "--open": 0, "--glow": 0.2, duration: 0.24, ease: ease.power3 }, 0.66)
       .fromTo(laptop, { "--seam": 0 }, { "--seam": 1, duration: 0.05 }, 0.9)
@@ -119,7 +120,6 @@ export function Contact() {
     <section ref={ref} id="contact" className={`${s.section} grain`} aria-labelledby="contact-title">
       <div className={s.pin}>
         <div className={s.cursorLight} aria-hidden="true" />
-        <div className={s.bgNight} aria-hidden="true" />
         <h2 id="contact-title" className={s.title} tabIndex={-1}>
           Let&rsquo;s build something <span className="gradient-text">everyone</span> can use.
         </h2>
