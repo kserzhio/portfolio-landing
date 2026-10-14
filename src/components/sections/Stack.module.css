@@ -8,8 +8,9 @@
 }
 /* Full motion: Stack's last viewport sits over the pinned Contact; Contact's
    timeline pins it there and scales it down into the laptop's screen while
-   the camera pulls out (mirror of the hero's dive). */
-:global([data-motion="full"]) .section {
+   the camera pulls out (mirror of the hero's dive). The overlap applies once
+   that timeline exists (Contact sets html[data-contact-pin]). */
+:global(html[data-contact-pin]) .section {
   z-index: 21;
   margin-bottom: -100svh;
 }

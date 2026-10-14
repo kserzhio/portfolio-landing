@@ -3,8 +3,10 @@
   background: var(--night);
 }
 /* Full motion: overlap the hero's last pinned viewport (see Hero END) so the
-   About text rises the moment the camera is inside the screen. */
-:global([data-motion="full"]) .intro {
+   About text rises the moment the camera is inside the screen. Only once the
+   hero's pin exists (Hero sets html[data-hero-pin]) — before that the hero is
+   one viewport tall and the overlap would put About over the first screen. */
+:global(html[data-hero-pin]) .intro {
   position: relative;
   z-index: 21;
   margin-top: -100svh;

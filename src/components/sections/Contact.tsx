@@ -53,6 +53,9 @@ export function Contact() {
     // The pinned page's top edge sits (height − viewport) above the viewport top.
     const pageTop = () => (page ? page.offsetHeight - pin.clientHeight : 0);
     const zoomEnd = () => `+=${ZOOM_END * PIN * innerHeight}`;
+    // Lets Stack overlap the pin's first viewport (Stack.module.css) — only once this timeline exists.
+    const html = document.documentElement;
+    html.setAttribute("data-contact-pin", "");
 
     let lastP = 0;
     const tl = gsap.timeline({
@@ -155,6 +158,7 @@ export function Contact() {
     // Cursor light (v2 §9) — fine pointers only.
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches) {
       return () => {
+        html.removeAttribute("data-contact-pin");
         offFocus();
         offMagnetic?.();
       };
@@ -172,6 +176,7 @@ export function Contact() {
     pin.addEventListener("pointermove", onMove);
     pin.addEventListener("pointerleave", onLeave);
     return () => {
+      html.removeAttribute("data-contact-pin");
       offFocus();
       offMagnetic?.();
       pin.removeEventListener("pointermove", onMove);

@@ -114,6 +114,8 @@ export function Hero() {
 
     // ---- full: pinned timeline — the opening (Developer Spec §1), then the dive into the screen ----
     const pin = q(`.${s.pin}`)[0] as HTMLElement;
+    // Lets Intro overlap the pin's last viewport (Intro.module.css) — only now that the pin exists.
+    document.documentElement.setAttribute("data-hero-pin", "");
     const name = q(`.${s.name}`)[0];
     const split = SplitText.create(name, { type: "chars", aria: "auto" });
 
@@ -262,6 +264,7 @@ export function Hero() {
     }
 
     return () => {
+      document.documentElement.removeAttribute("data-hero-pin");
       clearTimeout(hintTimer);
       window.removeEventListener("loader:done", startHint);
       section.removeAttribute("data-hint");
