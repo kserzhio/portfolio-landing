@@ -14,6 +14,7 @@ import { DiveBridge } from "@/components/features/DiveBridge";
 import { SoundCues, TabToast } from "@/components/features/Extras";
 import { FocusCursor } from "@/components/features/FocusCursor";
 import { Marquee } from "@/components/features/Marquee";
+import { ScreenFrame } from "@/components/features/ScreenFrame";
 import { ScreenReaderMode } from "@/components/features/ScreenReaderMode";
 import { VisionSim } from "@/components/features/VisionSim";
 import { XRay } from "@/components/features/XRay";
@@ -43,6 +44,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
+      <ScreenFrame />
       <Companion />
       <XRay />
       <ScreenReaderMode />

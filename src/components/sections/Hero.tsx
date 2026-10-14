@@ -4,6 +4,7 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { heroChips, person, type Chip } from "@/content/site";
 import { gsap, SplitText, ease } from "@/lib/gsap";
 import { useMotion, useSectionMotion } from "@/lib/motion";
+import { boxIn, coverScreen, OPEN_FACING } from "@/lib/screen";
 import { cue } from "@/lib/sound";
 import { Laptop } from "../Laptop";
 import { SkillChip } from "../SkillChip";
@@ -13,6 +14,10 @@ import s from "./Hero.module.css";
 const SCREEN = { x: 720, y: 385 };
 // Laptop camera keyframes: yPercent of its own height, scale.
 const CAM = { closed: [21.154, 1.2], push: [15.385, 1.4], settled: [84.231, 0.72] } as const;
+// Timeline units: 0–1 is the opening (spec §1); DIVE…END the camera enters the
+// screen and the page continues inside it (lib/screen.ts).
+const DIVE = 1.1;
+const END = 1.55;
 
 const layerOf = (c: Chip) => (c.depth === 0 ? "front" : c.depth < 0.5 ? "mid" : "back");
 // SkillChip v2: blur = depth × 7px, opacity = 1 − depth × 0.6.
@@ -104,7 +109,8 @@ export function Hero() {
       return;
     }
 
-    // ---- full: pinned 300vh timeline (Developer Spec §1) ----
+    // ---- full: pinned timeline — the opening (Developer Spec §1), then the dive into the screen ----
+    const pin = q(`.${s.pin}`)[0] as HTMLElement;
     const name = q(`.${s.name}`)[0];
     const split = SplitText.create(name, { type: "chars", aria: "auto" });
 
@@ -124,16 +130,18 @@ export function Hero() {
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
-        trigger: q(`.${s.pin}`)[0],
+        trigger: pin,
         start: "top top",
-        end: "+=300%",
+        end: `+=${300 * END}%`,
         pin: true,
         scrub: 0.8,
+        invalidateOnRefresh: true,
         onUpdate: (st) => {
-          if (st.direction > 0 && st.progress > 0.03 && lastP <= 0.03) cue("lid-open");
-          lastP = st.progress;
+          const t = st.progress * END;
+          if (st.direction > 0 && t > 0.03 && lastP <= 0.03) cue("lid-open");
+          lastP = t;
           if (orbit.current) {
-            orbit.current.settled = st.progress > 0.8;
+            orbit.current.settled = t > 0.8 && t < DIVE + 0.1;
             syncOrbit();
           }
         },
@@ -163,8 +171,32 @@ export function Hero() {
       .to(wrap, { yPercent: CAM.settled[0], scale: CAM.settled[1], duration: 0.25, ease: ease.power3 }, 0.65)
       .to(split.chars, { opacity: 1, yPercent: 0, duration: 0.08, stagger: 0.14 / split.chars.length, ease: ease.expo }, 0.78)
       .to(q(`.${s.sub}, .${s.intro}`), { opacity: 1, y: 0, duration: 0.15, stagger: 0.03, ease: ease.expo }, 0.85)
-      .fromTo(q(`.${s.progress} span`), { scaleX: 0 }, { scaleX: 1, duration: 1 }, 0)
+      .fromTo(q(`.${s.progress} span`), { scaleX: 0 }, { scaleX: 1, duration: END }, 0)
       .to(q(`.${s.cursorLight}`), { opacity: 1, duration: 0.2 }, 0.8);
+
+    // The dive: text and chips clear, the camera flies into the screen until it
+    // covers the viewport, the screen fades to the page colour and the CSS screen
+    // frame takes over from the model's bezel. The page then scrolls "inside".
+    const cover = () =>
+      coverScreen(boxIn(wrap as HTMLElement, pin), pin.clientWidth, pin.clientHeight, {
+        x: (wrap as HTMLElement).offsetWidth / 2,
+        y: 0,
+      });
+    tl.to(q(`.${s.text}`), { opacity: 0, y: -48, duration: 0.14, ease: ease.power3 }, DIVE)
+      .to(q("[data-layer]"), { opacity: 0, scale: 1.35, duration: 0.2, ease: "power2.in" }, DIVE)
+      .to(q(`.${s.cursorLight}, .${s.progress}`), { opacity: 0, duration: 0.1 }, DIVE)
+      .to(q(`.${s.pause}`), { autoAlpha: 0, duration: 0.08 }, DIVE)
+      .to(
+        wrap,
+        { yPercent: 0, x: () => cover().x, y: () => cover().y, scale: () => cover().scale, duration: 0.38, ease: "power2.inOut" },
+        DIVE + 0.02,
+      )
+      .to(laptop, { "--open": OPEN_FACING, "--glow": 0, duration: 0.24 }, DIVE)
+      .to(laptop, { "--blank": 1, duration: 0.12, ease: "power1.in" }, DIVE + 0.24)
+      .fromTo(document.documentElement, { "--frame-in": 0 }, { "--frame-in": 1, duration: 0.05 }, DIVE + 0.36)
+      // Swap the giant laptop for plain page colour so its chin never shows as the hero scrolls away.
+      .to(q(`.${s.bgNight}`), { opacity: 1, duration: 0.03 }, DIVE + 0.41)
+      .set({}, {}, END);
 
     // Idle orbit: each layer drifts on an ellipse; stops off-screen or when paused.
     const tweens = LAYERS.map(({ id, period, rx, ry }) => {
@@ -193,7 +225,6 @@ export function Hero() {
     io.observe(section);
 
     // Cursor light trails the pointer (quickTo, 0.8s lag) on fine pointers only.
-    const pin = q(`.${s.pin}`)[0] as HTMLElement;
     let onMove: ((e: PointerEvent) => void) | null = null;
     if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
       const light = q(`.${s.cursorLight}`)[0];
@@ -239,7 +270,11 @@ export function Hero() {
           <div className={s.scene}>
             <ChipLayer id="back" />
             <div className={s.laptopWrap}>
-              <Laptop priority label="Laptop opening to show accessible button code, surrounded by technology icons" />
+              <Laptop
+                priority
+                oversample={2}
+                label="Laptop opening to show accessible button code, surrounded by technology icons"
+              />
             </div>
             <ChipLayer id="mid" />
             <ChipLayer id="front" />
@@ -254,6 +289,7 @@ export function Hero() {
             <span />
           </div>
         </div>
+        <div className={s.bgNight} aria-hidden="true" />
         {mode === "full" && (
           <button
             type="button"

@@ -26,6 +26,16 @@
   pointer-events: none;
 }
 
+/* Full motion: page colour over the zoomed-in laptop until the pin starts. */
+.bgNight {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--night);
+  opacity: 0;
+  pointer-events: none;
+}
+
 .title {
   position: relative;
   max-width: 1320px;

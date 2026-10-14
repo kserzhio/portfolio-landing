@@ -5,6 +5,7 @@
   --lines: 6;
   --glow: 0.6;
   --seam: 0;
+  --blank: 0;
   position: relative;
   width: 100%;
   aspect-ratio: 760 / 520;

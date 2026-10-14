@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { gsap, ease } from "@/lib/gsap";
 import { useSectionMotion } from "@/lib/motion";
-import { Laptop } from "../Laptop";
 import s from "./DiveBridge.module.css";
 
 // The next section as markup (mockups 3f / 3g). Indent in ch; scatter =
@@ -24,10 +23,10 @@ const LINES: { indent: number; scatter: [number, number, number, number]; toks: 
 const COLORS = { p: "#8a8a96", t: "#7cc4ff", a: "#c4a7ff", s: "#9be3b0", x: "#f5f5f7" };
 
 /**
- * "Dive into the code" (Developer Spec §11.5, mockups 3e → 3f → 3g): a pinned
- * bridge between Journey and Before / After.
- *   A · the laptop scales up until its screen fills the viewport, vignette closes in
- *   B · the screen dissolves into the next section's markup — scattered, rotated,
+ * "Dive into the code" (Developer Spec §11.5, mockups 3f → 3g): a pinned bridge
+ * between Journey and Before / After. The page already runs inside the laptop's
+ * screen (lib/screen.ts), so the old step A — a second laptop zooming in — is gone:
+ *   B · the screen shows the next section's markup — scattered, rotated,
  *       depth-blurred lines drift into alignment
  *   C · lines snap into place and a light circle wipe reveals section 4
  * Decorative (aria-hidden); full-motion mode only — reduced / mobile get a plain break.
@@ -52,30 +51,22 @@ export function DiveBridge() {
     gsap
       .timeline({
         defaults: { ease: "none" },
-        scrollTrigger: { trigger: pin, start: "top top", end: "+=150%", pin: true, scrub: 0.8, invalidateOnRefresh: true },
+        scrollTrigger: { trigger: pin, start: "top top", end: "+=110%", pin: true, scrub: 0.8, invalidateOnRefresh: true },
       })
-      // A · camera enters the screen
-      .fromTo(q(`.${s.laptop}`), { scale: 1 }, { scale: 3.4, duration: 0.36, ease: ease.power3 }, 0)
-      .fromTo(q(`.${s.vignette}`), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.06)
       // B · the page as markup
-      .to(q(`.${s.laptop}`), { opacity: 0, duration: 0.1 }, 0.3)
-      .fromTo(q(`.${s.markupBg}`), { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.3)
-      .to(lines, { opacity: (i) => LINES[i].scatter[2], duration: 0.08, stagger: 0.006 }, 0.32)
-      .to(lines, { x: 0, rotation: 0, opacity: 1, filter: "blur(0px)", duration: 0.26, stagger: 0.008, ease: ease.expo }, 0.4)
+      .fromTo(q(`.${s.markupBg}`), { opacity: 0 }, { opacity: 1, duration: 0.12 }, 0)
+      .to(lines, { opacity: (i) => LINES[i].scatter[2], duration: 0.1, stagger: 0.008 }, 0.04)
+      .to(lines, { x: 0, rotation: 0, opacity: 1, filter: "blur(0px)", duration: 0.36, stagger: 0.01, ease: ease.expo }, 0.14)
       // C · markup reassembles, circle wipe into section 4
-      .to(q(`.${s.code}`), { opacity: 0.35, duration: 0.08 }, 0.68)
+      .to(q(`.${s.code}`), { opacity: 0.35, duration: 0.1 }, 0.56)
       // --r lives on the pin so the wipe and its glowing edge stay in sync.
-      .fromTo(pin, { "--r": "0px" }, { "--r": () => `${radius()}px`, duration: 0.3, ease: "power2.in" }, 0.7)
+      .fromTo(pin, { "--r": "0px" }, { "--r": () => `${radius()}px`, duration: 0.4, ease: "power2.in" }, 0.58)
       .to(q(`.${s.ring}`), { opacity: 0, duration: 0.05 }, 0.95);
   });
 
   return (
     <section ref={ref} className={s.dive} aria-hidden="true">
       <div className={s.pin}>
-        <div className={s.laptop}>
-          <Laptop oversample={4} />
-        </div>
-        <div className={s.vignette} />
         <div className={s.markupBg} />
         <div className={s.code}>
           {LINES.map((ln, i) => (

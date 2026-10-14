@@ -26,6 +26,14 @@
 
   --header-h: 60px;
   --gutter: 120px;
+  /* Screen frame (lib/screen.ts): --frame is 1 while the page is "inside" the
+     laptop. The hero owns --frame-in, Contact owns --frame-out, so the two
+     scrubbed timelines never fight over one value. */
+  --bezel: 14px;
+  --screen-r: 18px;
+  --frame-in: 0;
+  --frame-out: 0;
+  --frame: calc(var(--frame-in) - var(--frame-out));
   --focus: var(--blue);
 }
 

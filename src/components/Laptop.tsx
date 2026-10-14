@@ -34,6 +34,7 @@ const windowLoaded = () =>
  *   --lines 0 → 6 code lines typed
  *   --glow  floor glow opacity
  *   --seam  light leaking through the hinge once shut (v2 frame 8b)
+ *   --blank 0 → 1 screen fades to the page colour (entering / leaving the screen)
  */
 export function Laptop({ label, className, priority = false, oversample = 1.5 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -61,6 +62,7 @@ export function Laptop({ label, className, priority = false, oversample = 1.5 }:
         lines: num(cs, "--lines", 6),
         glow: num(cs, "--glow", 0.6),
         seam: num(cs, "--seam", 0),
+        blank: num(cs, "--blank", 0),
       });
     };
     const size = () => {

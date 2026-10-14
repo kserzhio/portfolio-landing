@@ -5,6 +5,7 @@ import { links } from "@/content/site";
 import { gsap, ease } from "@/lib/gsap";
 import { magnetic } from "@/lib/magnetic";
 import { scrollOnFocus, useMotion, useSectionMotion } from "@/lib/motion";
+import { boxIn, coverScreen, OPEN_FACING } from "@/lib/screen";
 import { cue } from "@/lib/sound";
 import { VisitSummary } from "../features/Extras";
 import { Laptop } from "../Laptop";
@@ -35,44 +36,57 @@ export function Contact() {
       return () => offMagnetic?.();
     }
 
-    // Headline + buttons rise in as the section arrives, then stay put.
-    const rise = gsap.fromTo(
-      q(`.${s.title}, .${s.actions}`),
-      { y: 40, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        stagger: 0.1,
-        ease: ease.expo,
-        scrollTrigger: { trigger: ref.current, start: "top 75%", end: "top 15%", scrub: 0.8 },
-      },
-    );
-
-    // full: pinned 150%; the lid closes and the page ends on frame 1a.
+    // full: the page has been scrolling inside the laptop's screen. Pinned, the
+    // camera pulls back out of it (mirror of the hero's dive), the headline and
+    // buttons rise in around the laptop, then the lid shuts (v2 frame 8b).
+    const pin = q(`.${s.pin}`)[0] as HTMLElement;
+    const cover = () => coverScreen(boxIn(laptop as HTMLElement, pin), pin.clientWidth, pin.clientHeight);
+    const SHOWN = 0.5; // headline + buttons fully in
     let lastP = 0;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: {
-        trigger: q(`.${s.pin}`)[0],
+        trigger: pin,
         start: "top top",
-        end: "+=150%",
+        end: "+=220%",
         pin: true,
         scrub: 0.8,
+        invalidateOnRefresh: true,
         onUpdate: (self) => {
           // Sound cue as the lid passes half-closed.
-          if (self.direction > 0 && self.progress > 0.55 && lastP <= 0.55) cue("lid-close");
+          if (self.direction > 0 && self.progress > 0.78 && lastP <= 0.78) cue("lid-close");
           lastP = self.progress;
         },
       },
     });
-    // Final 10%: lid shut, light leaks through the hinge seam (v2 frame 8b).
-    tl.fromTo(laptop, { "--open": 1, "--glow": 0.7 }, { "--open": 0, "--glow": 0.2, duration: 0.7, ease: ease.power3 }, 0.2)
+    tl.fromTo(
+      laptop,
+      { transformOrigin: "0 0", x: () => cover().x, y: () => cover().y, scale: () => cover().scale },
+      { x: 0, y: 0, scale: 1, duration: 0.38, ease: "power2.inOut" },
+      0.04,
+    )
+      .fromTo(document.documentElement, { "--frame-out": 0 }, { "--frame-out": 1, duration: 0.05 }, 0)
+      // Until the pin starts the section reads as more page; then the giant laptop shows through.
+      .fromTo(q(`.${s.bgNight}`), { opacity: 1 }, { opacity: 0, duration: 0.03 }, 0)
+      .fromTo(
+        laptop,
+        { "--open": OPEN_FACING, "--blank": 1, "--glow": 0 },
+        { "--open": 1, "--blank": 0, "--glow": 0.7, duration: 0.2, immediateRender: true },
+        0.2,
+      )
+      .fromTo(
+        q(`.${s.title}, .${s.actions}, .${s.summary}`),
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.06, duration: 0.14, ease: ease.expo },
+        SHOWN - 0.2,
+      )
+      .to(laptop, { "--open": 0, "--glow": 0.2, duration: 0.24, ease: ease.power3 }, 0.66)
       .fromTo(laptop, { "--seam": 0 }, { "--seam": 1, duration: 0.05 }, 0.9)
       .to(laptop, { "--seam": 0.6, duration: 0.05 }, 0.95);
 
-    // Focusing a button before it has fully risen in jumps to the pin start.
+    // Focusing a link before the buttons have risen in jumps to where they show.
     const st = tl.scrollTrigger!;
-    const offFocus = scrollOnFocus(ref.current!, st, () => ((rise.scrollTrigger?.progress ?? 1) < 1 ? 0 : null), scrollTo);
+    const offFocus = scrollOnFocus(ref.current!, st, () => (st.progress < SHOWN ? SHOWN : null), scrollTo);
 
     // Cursor light (v2 §9) — fine pointers only.
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches) {
@@ -81,7 +95,6 @@ export function Contact() {
         offMagnetic?.();
       };
     }
-    const pin = q(`.${s.pin}`)[0] as HTMLElement;
     const light = q(`.${s.cursorLight}`)[0];
     const xTo = gsap.quickTo(light, "x", { duration: 0.8, ease: "power3" });
     const yTo = gsap.quickTo(light, "y", { duration: 0.8, ease: "power3" });
@@ -106,6 +119,7 @@ export function Contact() {
     <section ref={ref} id="contact" className={`${s.section} grain`} aria-labelledby="contact-title">
       <div className={s.pin}>
         <div className={s.cursorLight} aria-hidden="true" />
+        <div className={s.bgNight} aria-hidden="true" />
         <h2 id="contact-title" className={s.title} tabIndex={-1}>
           Let&rsquo;s build something <span className="gradient-text">everyone</span> can use.
         </h2>
@@ -139,7 +153,7 @@ export function Contact() {
           </li>
         </ul>
         <div className={s.laptop}>
-          <Laptop />
+          <Laptop oversample={2} />
         </div>
         <div className={s.summary}>
           <VisitSummary />

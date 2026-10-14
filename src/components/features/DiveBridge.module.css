@@ -1,4 +1,4 @@
-/* Dive into the code — mockups 3e / 3f / 3g. Full-motion mode only. */
+/* Dive into the code — mockups 3f / 3g. Full-motion mode only. */
 .dive {
   display: none;
   background: #000;
@@ -13,27 +13,6 @@
   height: 100svh;
   overflow: hidden;
   background: #000;
-}
-
-/* A · laptop; transform origin ≈ the screen's centre in the 760×520 box. */
-.laptop {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(760px, 62vw);
-  translate: -50% -46%;
-  transform-origin: 50% 38%;
-}
-.laptop > * {
-  --glow: 0.9;
-}
-
-.vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 60% 55% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* B · the page as markup */

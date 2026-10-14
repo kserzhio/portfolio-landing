@@ -85,7 +85,7 @@ export function Companion() {
     const paint = () => {
       if (!scene) return;
       scene.setScreen(screenFor(section, chapter, fixed));
-      scene.render({ open: 1, lines: 6, glow: 0.6, seam: 0 });
+      scene.render({ open: 1, lines: 6, glow: 0.6, seam: 0, blank: 0 });
     };
     const visible = () => {
       const show = inRange && !covering && !!screenFor(section, chapter, fixed);

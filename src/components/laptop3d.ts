@@ -3,7 +3,10 @@
 // laptop stays on screen as the poster until this is ready.
 import * as THREE from "three";
 
-export type LaptopState = { open: number; lines: number; glow: number; seam: number };
+export type LaptopState = { open: number; lines: number; glow: number; seam: number; blank: number };
+
+/** Page background the screen fades to when the camera enters it (--night). */
+const BLANK = "#0b0b0f";
 
 const CODE: [string, keyof typeof COLORS][][] = [
   [["<", "p"], ["button", "t"]],
@@ -329,6 +332,10 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
   const DH = 0.18;
   const chin = 0.0185;
   lid.add(mesh(roundedPanel(DW, DH, 0.002), display, [0, chin, 0.0006]));
+  // Solid page colour over the display: at full zoom the screen *is* the page.
+  const blank = new THREE.MeshBasicMaterial({ color: BLANK, transparent: true, opacity: 0, toneMapped: false, depthWrite: false });
+  const blankPanel = mesh(roundedPanel(DW, DH, 0.002), blank, [0, chin, 0.0007]);
+  lid.add(blankPanel);
   lid.add(mesh(new THREE.CircleGeometry(0.0012, 24), M.rubber, [0, chin + DH + (H - chin - DH) / 2, 0.0007]));
   const screenLight = new THREE.PointLight(0x8fb2ff, 0.02, 0.45, 2);
   screenLight.position.set(0, 0.09, 0.07);
@@ -389,7 +396,7 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
   let last = "";
   const render = (s: LaptopState) => {
     const lines = Math.max(0, Math.min(CODE.length, Math.floor(s.lines + 1e-6)));
-    const keyState = `${s.open.toFixed(4)}|${lines}|${s.glow.toFixed(3)}|${s.seam.toFixed(3)}`;
+    const keyState = `${s.open.toFixed(4)}|${lines}|${s.glow.toFixed(3)}|${s.seam.toFixed(3)}|${s.blank.toFixed(3)}`;
     if (keyState === last) return;
     last = keyState;
     if (lines !== drawnLines) drawScreen(lines);
@@ -400,6 +407,8 @@ export function createLaptopScene(canvas: HTMLCanvasElement) {
     (seam.material as THREE.MeshBasicMaterial).opacity = s.seam;
     (seamGlow.material as THREE.MeshBasicMaterial).opacity = s.seam;
     seam.visible = seamGlow.visible = s.seam > 0.001;
+    blank.opacity = clamp01(s.blank);
+    blankPanel.visible = s.blank > 0.001;
 
     let sh: Shared;
     try {

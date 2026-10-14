@@ -1,6 +1,7 @@
 .header {
   position: fixed;
-  inset: 0 0 auto;
+  /* Inside the laptop screen the header sits below the frame's top bezel. */
+  inset: calc(var(--frame) * var(--bezel)) 0 auto;
   z-index: 50;
   height: var(--header-h);
   display: flex;
