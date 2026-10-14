@@ -60,6 +60,10 @@
 .laptop > * {
   --glow: 0.45;
 }
+/* Full motion: the zoom-out scales the laptop about its top-left (Contact.tsx). */
+:global([data-motion="full"]) .laptop > * {
+  transform-origin: 0 0;
+}
 
 /* Visit summary pill sits over the bottom of the frame (8c). */
 .summary {

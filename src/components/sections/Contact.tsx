@@ -82,9 +82,12 @@ export function Contact() {
       defaults: { ease: "none" },
       scrollTrigger: { trigger: pin, start: "top top", end: zoomEnd, scrub: true, invalidateOnRefresh: true },
     });
+    // Both layers scale about their top-left corner, fixed in CSS: a
+    // transform-origin passed to the tween was dropped on the second pass
+    // through the section, which shifted the page off the screen.
     zoom.fromTo(
       laptop,
-      { transformOrigin: "0 0", x: () => cover().x, y: () => cover().y, scale: () => cover().scale },
+      { x: () => cover().x, y: () => cover().y, scale: () => cover().scale },
       { x: 0, y: 0, scale: 1, duration: ZOOM, ease: "power2.inOut" },
       0.02,
     );
@@ -102,19 +105,21 @@ export function Contact() {
         )
         .fromTo(
           page,
+          { x: 0, y: 0, scale: 1 },
           {
-            x: 0,
-            y: 0,
-            scale: 1,
-            transformOrigin: () => {
+            // Inverse of the cover about the laptop's cover origin O, rewritten for
+            // a top-left origin: t = −c + O·(1 − 1/s). Linear in the eased progress,
+            // so the page stays glued to the display all the way.
+            x: () => {
               const c = cover();
-              const b = boxIn(laptop as HTMLElement, pin);
-              return `${b.left + c.x}px ${pageTop() + b.top + c.y}px`;
+              const o = boxIn(laptop as HTMLElement, pin).left + c.x;
+              return -c.x + o * (1 - 1 / c.scale);
             },
-          },
-          {
-            x: () => -cover().x,
-            y: () => -cover().y,
+            y: () => {
+              const c = cover();
+              const o = pageTop() + boxIn(laptop as HTMLElement, pin).top + c.y;
+              return -c.y + o * (1 - 1 / c.scale);
+            },
             scale: () => 1 / cover().scale,
             duration: ZOOM,
             ease: "power2.inOut",

@@ -13,6 +13,9 @@
   z-index: 21;
   margin-bottom: -100svh;
 }
+:global([data-motion="full"]) .screen {
+  transform-origin: 0 0;
+}
 
 .title {
   font-size: clamp(40px, 5.6vw, 80px);
